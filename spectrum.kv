@@ -1,0 +1,37 @@
+<MainPage>:
+    name: "main"
+    FloatLayout:
+        orientation: "vertical"
+
+        Label:
+            id: title
+            opacity: 0
+            center: 400, -self.height
+            text: "SPECTRUM"
+            color:(0, 0, 198, 0.56)
+            font_size: 60
+            size_hint: .0, .0
+            pos_hint:{"center_x":0.5, "y":0.7}
+            outline_width: 3
+            outline_color:(0, 0 ,0)
+
+            canvas.before:
+                Rectangle:
+                    source: "resources/rymk58.jpg"
+                    size: root.width, root.height
+
+        FloatLayout:
+            orientation: "vertical"
+
+            HoverButton:
+                size_hint: 0.2, 0.1
+                text: "START"
+                pos_hint: {"center_x":0.5, "center_y":0.5}
+                font_size: 32
+                md_bg_color: (0, 0, 255, 0.8)
+                text_color: 1, 1, 1, 1
+                line_width: 2
+                line_color: 0, 0, 0, 1
+                on_release:
+                    app.root.current = "login"
+
