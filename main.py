@@ -19,17 +19,16 @@ Window.size = (800, 600)
 # <---- Widgets ---->
 
 class HoverButton(MDFillRoundFlatButton, ThemableBehavior, HoverBehavior):
-    md_bg_color = ListProperty((0, 0, 255, 0.8))
     def on_enter(self):
         Window.set_system_cursor('hand')
-        self.md_bg_color = (1, 1, 1, 1)
+        self.md_bg_color = (245/255, 195/255, 39/255, 0.8)
         self.text_color = (0, 0, 255, 0.5)
-        self.line_color = (0, 0, 255, 0.8)
+        self.line_color = (245/255, 131/255, 39/255, 0.8)
         Animation(size_hint=(.23, .13)).start(self)
 
     def on_leave(self):
         Window.set_system_cursor('arrow')
-        self.md_bg_color= (0, 0, 255, 0.8)
+        self.md_bg_color = (0, 130/255, 242/255, 0.8)
         self.text_color = (1, 1, 1, 1)
         self.line_color = (0, 0, 0, 1)
         Animation(size_hint=(.2, .1)).start(self)
