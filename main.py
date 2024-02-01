@@ -56,6 +56,8 @@ class MainPage(MDScreen):
 
 class SpectrumApp(MDApp):
     def build(self):
+        self.icon = 'resources/puzzle.png'
+
         self.main_screen = MainPage()
         self.label = self.main_screen.ids.title
         self.main_screen.animate_label_pop_up()

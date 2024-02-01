@@ -1,5 +1,11 @@
 <MainPage>:
     name: "main"
+
+    canvas.before:
+        Rectangle:
+            source: "resources/mainbg.jpg"
+            size: root.width, root.height
+
     FloatLayout:
         orientation: "vertical"
 
@@ -14,11 +20,6 @@
             pos_hint:{"center_x":0.5, "y":0.7}
             outline_width: 3
             outline_color:(0, 0 ,0)
-
-            canvas.before:
-                Rectangle:
-                    source: "resources/rymk58.jpg"
-                    size: root.width, root.height
 
         FloatLayout:
             orientation: "vertical"
