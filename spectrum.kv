@@ -24,7 +24,7 @@
         FloatLayout:
             orientation: "vertical"
 
-            HoverButton:
+            HoverButtonMainPage:
                 size_hint: 0.2, 0.1
                 text: "START"
                 pos_hint: {"center_x":0.5, "center_y":0.5}
@@ -35,4 +35,131 @@
                 line_color: 0, 0, 0, 1
                 on_release:
                     app.root.current = "login"
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+        pos_hint: {"x":.075}
+
+        Image:
+            source: 'resources/kid.gif'
+            size_hint: .3, .3
+
+<LoginPage>:
+    name:"login"
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'resources/purple_bg1.png'
+
+        MDCard:
+            size_hint: 0.75, 0.3
+            size: 700, 700
+            pos_hint: {"center_x":0.5,"center_y":0.5}
+            elevation: 9
+            padding: 25
+            spacing: 25
+            orientation: 'vertical'
+            line_width:4
+            line_color:(0,0,0,0.5)
+
+            Label:
+                id: empty
+                font_size:5
+
+            Label:
+                id: title
+                text: "Your Own PERSONAL Space !"
+                color:"purple"
+                font_size:40
+                font_style: 'Calibre'
+                size_hint:.1,.1
+                pos_hint:{"center_x":0.5, "y":0.3}
+                outline_width: 3
+                outline_color:(0,0,0,1)
+
+            Label:
+                id: empty
+                font_size:5
+
+            HoverTextBox:
+                id: uid
+                hint_text: "Username"
+                icon_right: "account"
+                size_hint_x: None
+                width: 200
+                font_size: 20
+                pos_hint: {"center_x": 0.5}
+
+            HoverTextBox:
+                id: pwd
+                hint_text: "Password"
+                icon_right: "lock"
+                size_hint_x: None
+                width: 200
+                font_size: 20
+                pos_hint: {"center_x": 0.5}
+                password: True
+
+            HoverButtonPurpleDesign:
+                text: "LOGIN"
+                font_size: 20
+                pos_hint: {"center_x": 0.5}
+                on_press: root.logIn()
+                line_width: 1.2
+                line_color:"purple"
+                text_color:"purple"
+                md_bg_color:(1,1,1,1)
+
+            HoverButtonPurpleDesign:
+                text: "CLEAR"
+                font_size: 20
+                pos_hint: {"center_x": 0.5}
+                on_press: root.clear()
+                line_width: 1.2
+                line_color:"purple"
+                text_color:"purple"
+                md_bg_color:(1,1,1,1)
+
+            MDLabel:
+                opacity: 0
+                id: error_label
+                text: "Invalid Login"
+                font_size: 14
+                halign: 'center'
+                size_hint_y: None
+                height: self.texture_size[1]
+                pos_hint: {"center_x": 0.5}
+                theme_text_color:'Custom'
+                text_color: 1,0,0,1
+
+            MDLabel:
+                id: signup_label
+                text: "You don't have an account?"
+                font_size: 15
+                halign:'center'
+                pos_hint: {"center_x": 0.5}
+                text_color: 0,0,1,0
+
+            HoverButtonPurpleDesign:
+                id: signup_button
+                text: "SIGN UP"
+                font_size: 25
+                pos_hint: {"center_x": 0.5}
+                line_width: 2
+                theme_text_color: "Custom"
+                line_color:"purple"
+                text_color:"purple"
+                md_bg_color:(1,1,1,1)
+                on_release:
+                    app.root.current = "signup"
+
+            Widget:
+                size_hint_y: None
+                height: 10
 
