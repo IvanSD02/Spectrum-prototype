@@ -96,6 +96,9 @@ class MainPage(MDScreen):
 class LoginPage(MDScreen):
     def on_enter(self):
         Window.set_system_cursor('arrow')
+
+    def animate_loading_wheel(self):
+        pass
     def logIn(self):
         user_field = self.ids.uid
         pass_field = self.ids.pwd
@@ -122,6 +125,50 @@ class LoginPage(MDScreen):
         self.ids.uid.text = ""
         self.ids.pwd.text = ""
 
+class SignupPage(MDScreen):
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+    def create_account(self):
+        user_field = self.ids.uid
+        pass_field = self.ids.pwd
+        repass_field = self.ids.repwd
+        error_lab = self.ids.error_label
+
+        username, password, repeat_password = user_field.text, pass_field.text, repass_field.text
+
+        curs.execute("SELECT * FROM Login WHERE Username = ?", (username,))
+        data = curs.fetchone()
+
+        if data is not None:
+            user_field.error = True
+            error_lab.text = "Username already exists!"
+            error_lab.opacity = 1
+            return
+
+        if not password or not username:
+            user_field.error = True
+            pass_field.error = True
+            repass_field.error = True
+            error_lab.text = "Please enter valid username and password!"
+            error_lab.opacity = 1
+            return
+
+        if password != repeat_password:
+            pass_field.error = True
+            repass_field.error = True
+            error_lab.text = "Passwords must match!"
+            error_lab.opacity = 1
+
+        else:
+            self.manager.current = 'success'
+            pass_field.error = False
+            repass_field.error = False
+            error_lab.opacity = 0
+
+            curs.execute("INSERT INTO login (Username, Password) VALUES (?, ?)", (username, password))
+            connector.commit()
+
+
 # <---- App Class ---->
 
 class SpectrumApp(MDApp):
@@ -137,9 +184,11 @@ class SpectrumApp(MDApp):
         Clock.schedule_interval(self.main_screen.animate_label_movement, 2)
 
         self.login_screen = LoginPage()
+        self.signup_screen = SignupPage()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
+        self.screen_manager.add_widget(self.signup_screen)
 
 
         return self.screen_manager
