@@ -53,11 +53,11 @@ class HoverButtonPurpleDesign(MDFillRoundFlatButton, HoverBehavior):
     def on_leave(self):
         Window.set_system_cursor('arrow')
 
-class HoverButton3(MDRaisedButton, HoverBehavior):
-    def on_enter(self):
+class HoverTextBox(MDTextField, HoverBehavior):
+    def on_enter(self, *args):
         Window.set_system_cursor('hand')
 
-    def on_leave(self):
+    def on_leave(self, *args):
         Window.set_system_cursor('arrow')
 
 class HoverButtonOriginal(Button, HoverBehavior):
@@ -67,12 +67,13 @@ class HoverButtonOriginal(Button, HoverBehavior):
     def on_leave(self):
         Window.set_system_cursor('arrow')
 
-class HoverTextBox(MDTextField, HoverBehavior):
-    def on_enter(self, *args):
+class HoverButton3(MDRaisedButton, HoverBehavior):
+    def on_enter(self):
         Window.set_system_cursor('hand')
 
-    def on_leave(self, *args):
+    def on_leave(self):
         Window.set_system_cursor('arrow')
+
 
 # <---- Screens ---->
 
