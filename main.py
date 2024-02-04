@@ -1,4 +1,5 @@
 import sqlite3
+import re
 
 from kivymd.app import MDApp
 
@@ -15,7 +16,8 @@ from kivymd.uix.behaviors import HoverBehavior
 from kivymd.theming import ThemableBehavior
 
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDFillRoundFlatButton, MDRaisedButton
+from kivymd.uix.button import MDFillRoundFlatButton, MDRaisedButton, MDFlatButton
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.textfield import MDTextField
 
@@ -74,6 +76,13 @@ class HoverButton3(MDRaisedButton, HoverBehavior):
     def on_leave(self):
         Window.set_system_cursor('arrow')
 
+class CustomDialog(MDDialog):
+
+    def open_strong_password_dialog(self):
+        self.open()
+    def dismiss_strong_password_dialog(self):
+        self.dismiss(force=True)
+
 
 # <---- Screens ---->
 
@@ -128,7 +137,31 @@ class LoginPage(MDScreen):
 class SignupPage(MDScreen):
     def on_enter(self):
         Window.set_system_cursor('arrow')
+
+    def strong_password_dialog(self):
+        """self.dialog = CustomDialog(
+            title="Please follow the guideline below:",
+            text="For a strong password you should include the following:\n"
+                 " - one capital letter\n"
+                 " - two small letters\n"
+                 " - one number\n"
+                 " - one special symbol (!, @, #, $, %, ^, &, *)\n",
+            buttons=[
+                MDFlatButton(
+                    id="ok_button",
+                    text="OK",
+                    theme_text_color="Custom",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=lambda _: self.dismiss_strong_password_dialog()
+                ),
+            ],
+        )"""
+        self.dialog = CustomDialog()
+        return self.dialog
+
     def create_account(self):
+        strong_password_regex = "^(?=(.*[a-z]){2,})(?=(.*[A-Z]){1,})(?=(.*[0-9]){1,})(?=(.*[!@#$%^&*()\-__+.]){1,}).{8,}$"
+
         user_field = self.ids.uid
         pass_field = self.ids.pwd
         repass_field = self.ids.repwd
@@ -149,9 +182,34 @@ class SignupPage(MDScreen):
             user_field.error = True
             pass_field.error = True
             repass_field.error = True
-            error_lab.text = "Please enter valid username and password!"
+            error_lab.text = "All fields have to be selected!"
             error_lab.opacity = 1
             return
+
+        strong_password_pattern = re.compile(strong_password_regex)
+        if not strong_password_pattern.match(password):
+            pass_field.error = True
+            repass_field.error = True
+
+            if len(password) < 8:
+                error_lab.text = "Please enter a valid password! (At least 8 symbols)"
+            else:
+                error_lab.text = "Please enter a valid password! (Must follow strong password guideline)"
+                self.dialog = self.strong_password_dialog()
+                self.dialog.open_strong_password_dialog()
+
+
+            error_lab.opacity = 1
+            return
+
+        if len(password) <= 8:
+            pass_field.error = True
+            repass_field.error = True
+            error_lab.text = "Please enter a valid password! (At least 8 symbols)"
+            error_lab.opacity = 1
+            return
+
+
 
         if password != repeat_password:
             pass_field.error = True
@@ -167,6 +225,11 @@ class SignupPage(MDScreen):
 
             curs.execute("INSERT INTO login (Username, Password) VALUES (?, ?)", (username, password))
             connector.commit()
+
+class SuccessfulSignupPage(MDScreen):
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+    pass
 
 
 # <---- App Class ---->
@@ -185,10 +248,12 @@ class SpectrumApp(MDApp):
 
         self.login_screen = LoginPage()
         self.signup_screen = SignupPage()
+        self.successful_signup_screen = SuccessfulSignupPage()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
         self.screen_manager.add_widget(self.signup_screen)
+        self.screen_manager.add_widget(self.successful_signup_screen)
 
 
         return self.screen_manager
