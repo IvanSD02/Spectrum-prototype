@@ -106,8 +106,12 @@ class LoginPage(MDScreen):
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
+    def change_screen(self):
+        self.manager.current = "choose_type_account"
+
     def animate_loading_wheel(self):
-        pass
+        self.ids.circle.opacity = 1
+        Clock.schedule_once(lambda _: self.change_screen(), 3)
     def logIn(self):
         user_field = self.ids.uid
         pass_field = self.ids.pwd
@@ -128,7 +132,8 @@ class LoginPage(MDScreen):
         else:
             error_label.opacity = 0
 
-        self.manager.current = 'checks_page'
+        self.manager.transition.direction = "left"
+        self.animate_loading_wheel()
 
     def clear(self):
         self.ids.uid.text = ""
@@ -139,23 +144,6 @@ class SignupPage(MDScreen):
         Window.set_system_cursor('arrow')
 
     def strong_password_dialog(self):
-        """self.dialog = CustomDialog(
-            title="Please follow the guideline below:",
-            text="For a strong password you should include the following:\n"
-                 " - one capital letter\n"
-                 " - two small letters\n"
-                 " - one number\n"
-                 " - one special symbol (!, @, #, $, %, ^, &, *)\n",
-            buttons=[
-                MDFlatButton(
-                    id="ok_button",
-                    text="OK",
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=lambda _: self.dismiss_strong_password_dialog()
-                ),
-            ],
-        )"""
         self.dialog = CustomDialog()
         return self.dialog
 
@@ -198,7 +186,6 @@ class SignupPage(MDScreen):
                 self.dialog = self.strong_password_dialog()
                 self.dialog.open_strong_password_dialog()
 
-
             error_lab.opacity = 1
             return
 
@@ -208,8 +195,6 @@ class SignupPage(MDScreen):
             error_lab.text = "Please enter a valid password! (At least 8 symbols)"
             error_lab.opacity = 1
             return
-
-
 
         if password != repeat_password:
             pass_field.error = True
@@ -231,6 +216,11 @@ class SuccessfulSignupPage(MDScreen):
         Window.set_system_cursor('arrow')
     pass
 
+class ChooseTypeAccountPage(MDScreen):
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+
+
 
 # <---- App Class ---->
 
@@ -250,10 +240,14 @@ class SpectrumApp(MDApp):
         self.signup_screen = SignupPage()
         self.successful_signup_screen = SuccessfulSignupPage()
 
+        self.choose_type_account_screen = ChooseTypeAccountPage()
+
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
         self.screen_manager.add_widget(self.signup_screen)
         self.screen_manager.add_widget(self.successful_signup_screen)
+
+        self.screen_manager.add_widget(self.choose_type_account_screen)
 
 
         return self.screen_manager

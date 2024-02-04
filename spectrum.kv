@@ -53,6 +53,7 @@
         Rectangle:
             source: "resources/purple_bg3.jpg"
             size: root.width, root.height
+
     FloatLayout:
 
         MDIconButton:
@@ -75,7 +76,7 @@
                 size_hint: 0.6, 0.7
                 pos_hint: {"center_x":0.5,"center_y":0.5}
                 elevation: 9
-                spacing: 25
+                spacing: 20
                 orientation: 'vertical'
                 line_width:4
                 line_color:(0,0,0,0.5)
@@ -119,7 +120,8 @@
                     text: "LOGIN"
                     font_size: 20
                     pos_hint: {"center_x": 0.5}
-                    on_press: root.logIn()
+                    on_press:
+                        root.logIn()
                     line_width: 1.2
                     line_color:"purple"
                     text_color:"purple"
@@ -172,10 +174,12 @@
                 MDAnchorLayout:
                     anchor_x: 'right'
                     anchor_y: 'bottom'
-                    size_hint: .1, .1
+                    size_hint: 20.1, 20.1
                     pos_hint: {"center_x": 0.5}
 
                     Image:
+                        id: circle
+                        opacity: 0
                         source: 'resources/circle.gif'
 
 
@@ -317,9 +321,9 @@
             color: "purple"
             font_size: 50
             size_hint: .1,.1
-            pos_hint:{"center_x":0.5, "y":0.3}
+            pos_hint: {"center_x":0.5, "y":0.3}
             outline_width: 3
-            outline_color:(0,0,0,1)
+            outline_color: (0, 0, 0, 1)
 
         HoverButtonPurpleDesign:
             id: signup_button
@@ -334,6 +338,9 @@
             on_release:
                 root.manager.transition.direction = "right"
                 app.root.current = "login"
+
+<ChooseTypeAccountPage>:
+    name: "choose_type_account"
 
 <CustomDialog>:
     title: "Please follow the guideline below:"
