@@ -17,6 +17,7 @@ from kivymd.theming import ThemableBehavior
 
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFillRoundFlatButton, MDRaisedButton, MDFlatButton
+from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.textfield import MDTextField
@@ -82,6 +83,22 @@ class CustomDialog(MDDialog):
         self.open()
     def dismiss_strong_password_dialog(self):
         self.dismiss(force=True)
+
+class HoverCardChooseProfile(MDCard, HoverBehavior):
+    def on_enter(self):
+        Window.set_system_cursor('hand')
+        self.md_bg_color = (245/255, 195/255, 39/255, 0.8)
+        self.text_color = (0, 0, 255, 0.5)
+        self.line_color = (245/255, 131/255, 39/255, 0.8)
+        Animation(size_hint=(0.5, 0.7)).start(self)
+
+    def on_leave(self):
+        Window.set_system_cursor('arrow')
+        self.md_bg_color = (255/255, 255/255, 255/255, 1)
+        self.text_color = (1, 1, 1, 1)
+        self.line_color = (0, 0, 0, 1)
+        Animation(size_hint=(0.3, 0.5)).start(self)
+
 
 
 # <---- Screens ---->

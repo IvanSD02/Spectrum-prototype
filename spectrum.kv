@@ -76,26 +76,23 @@
                 size_hint: 0.6, 0.7
                 pos_hint: {"center_x":0.5,"center_y":0.5}
                 elevation: 9
-                spacing: 20
+                spacing: 25
                 orientation: 'vertical'
                 line_width:4
                 line_color:(0,0,0,0.5)
-                padding: (0, 50, 0, 50)
+                padding: (0, 50, 0, 20)
 
                 Label:
                     id: title
                     text: "Your Own PERSONAL Space !"
-                    color:"purple"
-                    font_size:40
+                    color: "purple"
+                    padding: (0, 20, 0, 20)
+                    font_size: 40
                     font_style: 'Calibre'
-                    size_hint:.1,.1
-                    pos_hint:{"center_x":0.5, "y":0.3}
+                    size_hint: .1, .1
+                    pos_hint: {"center_x":0.5, "y":0.3}
                     outline_width: 3
-                    outline_color:(0,0,0,1)
-
-                Label:
-                    id: empty
-                    font_size:5
+                    outline_color: (0, 0, 0, 1)
 
                 HoverTextBox:
                     id: uid
@@ -212,7 +209,7 @@
             pos_hint: {"center_x":0.5,"center_y":0.5}
             elevation: 6
             spacing: 25
-            padding: (0, 50, 0, 50)
+            padding: (0, 50, 0, 100)
             orientation: 'vertical'
             line_width:4
             line_color:(0,0,0,0.5)
@@ -341,6 +338,84 @@
 
 <ChooseTypeAccountPage>:
     name: "choose_type_account"
+
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'resources/orange_bg2.jpg'
+
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 40
+        padding: (40, 0, 40, 0)
+
+        HoverCardChooseProfile:
+            orientation: 'vertical'
+            size_hint: 0.3, 0.5
+            pos_hint: {"center_x":0.5, "center_y":0.5}
+            font_size: 32
+            md_bg_color: (255, 255, 255, 1)
+            text_color: 1, 1, 1, 1
+            line_width: 2
+            line_color: 0, 0, 0, 1
+            elevation: 6
+            spacing: 25
+            padding: (0, 50, 0, 50)
+
+            on_release:
+                root.manager.transition.direction = "left"
+                app.root.current = "next"
+
+            Image:
+                pos_hint: {"center_x":0.5, "center_y":0.5}
+                source: 'resources/adult_with_kid.png'
+                size_hint: .5, .5
+
+            Label:
+                text: "PARENTAL"
+                color: (0, 130/255, 242/255, 0.8)
+                padding: (0, 20, 0, 20)
+                font_size: 40
+                font_style: 'Calibre'
+                size_hint: .1, .1
+                pos_hint: {"center_x":0.5, "y":0.3}
+                outline_width: 3
+                outline_color: (0, 0, 0, 1)
+
+        HoverCardChooseProfile:
+            orientation: 'vertical'
+            size_hint: 0.3, 0.5
+            pos_hint: {"center_x":0.5, "center_y":0.5}
+            font_size: 32
+            md_bg_color: (255, 255, 255, 1)
+            text_color: 1, 1, 1, 1
+            line_width: 2
+            line_color: 0, 0, 0, 1
+            elevation: 6
+            spacing: 25
+            padding: (0, 50, 0, 50)
+
+            on_release:
+                root.manager.transition.direction = "left"
+                app.root.current = "next"
+
+            Image:
+                pos_hint: {"center_x":0.5, "center_y":0.5}
+                source: 'resources/adult.png'
+                size_hint: .5, .5
+
+            Label:
+                text: "PERSONAL"
+                color: (0, 130/255, 242/255, 0.8)
+                padding: (0, 20, 0, 20)
+                font_size: 40
+                font_style: 'Calibre'
+                size_hint: .1, .1
+                pos_hint: {"center_x":0.5, "y":0.3}
+                outline_width: 3
+                outline_color: (0, 0, 0, 1)
+
 
 <CustomDialog>:
     title: "Please follow the guideline below:"
