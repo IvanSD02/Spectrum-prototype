@@ -365,7 +365,7 @@
 
             on_release:
                 root.manager.transition.direction = "left"
-                app.root.current = "next"
+                app.root.current = "checks_page"
 
             Image:
                 pos_hint: {"center_x":0.5, "center_y":0.5}
@@ -398,7 +398,7 @@
 
             on_release:
                 root.manager.transition.direction = "left"
-                app.root.current = "next"
+                app.root.current = "checks_page"
 
             Image:
                 pos_hint: {"center_x":0.5, "center_y":0.5}
@@ -416,6 +416,257 @@
                 outline_width: 3
                 outline_color: (0, 0, 0, 1)
 
+<CheckFunctionalitiesPage>
+    name: "checks_page"
+
+    GridLayout:
+        cols:1
+        spacing: 25
+        padding: 25
+
+        Label:
+            id: title
+            text: "Choose Your Tools !"
+            color: "white"
+            font_size: 50
+            size_hint: .1,.1
+            pos_hint: {"center_x":0.5, "y":0.3}
+            outline_width: 3
+            outline_color: (0, 0, 0, 1)
+
+        ScrollView:
+            bar_width: 5
+            MDList:
+                id: scroll
+                md_bg_color: "wheat"
+
+                TwoLineAvatarIconListItem:
+                    id: p1
+                    text: "Daily Diary"
+                    secondary_text: "Write how your day went in you own personal space! (COMING SOON!)"
+                    icon: "pencil"
+
+                    IconLeftWidget:
+                        id: i1
+                        icon: "pencil"
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p110
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p1.text)
+                                #app.save_checked(*args,root.ids.mm1.text,root.ids.mm1.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p2
+                    text: "Emotions Diary"
+                    secondary_text: "Track your mood every single day!"
+                    icon: "emoticon-happy"
+
+                    IconLeftWidget:
+                        id: i2
+                        icon: "emoticon-happy" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p210
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p2.text)
+                                #app.save_checked(*args,root.ids.mm2.text,root.ids.mm2.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p3
+                    text: "Acknowledgements Diary"
+                    secondary_text: "Put down all your past accomplishments, present struggles and future dreams! (COMING SOON!)"
+                    icon: "star-box-outline"
+
+                    IconLeftWidget:
+                        id: i3
+                        icon: "star-box-outline" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p310
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p3.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p4
+                    text: "To-Do List"
+                    secondary_text: "List all your personal chores and do them one by one!"
+                    icon: "check-decagram"
+
+                    IconLeftWidget:
+                        id: i4
+                        icon: "check-decagram" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p410
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p4.text)
+                                #app.save_checked(*args,root.ids.mm3.text,root.ids.mm3.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p5
+                    text: "Scheduler"
+                    secondary_text: "Keep track of your routine and daily tasks! (COMING SOON!)"
+                    icon: "view-list"
+
+                    IconLeftWidget:
+                        id: i5
+                        icon: "view-list" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p510
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p5.text)
+                                #app.save_checked(*args,root.ids.mm4.text,root.ids.mm4.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p6
+                    text: "Text To Speech"
+                    secondary_text: "Another way to communicate freely!"
+                    icon: "microphone"
+
+                    IconLeftWidget:
+                        id: i6
+                        icon: "microphone" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p610
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p6.text)
+                                #app.save_checked(*args,root.ids.mm5.text,root.ids.mm5.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p7
+                    text: "Shopping List"
+                    secondary_text: "Don't forget your groceries!"
+                    icon: "shopping"
+
+                    IconLeftWidget:
+                        id: i7
+                        icon: "shopping" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p710
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p7.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p8
+                    text: "Book Manager"
+                    secondary_text: "Have all your book titles in one place! (COMING SOON!)"
+                    icon: "book"
+
+                    IconLeftWidget:
+                        id: i8
+                        icon: "book" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p810
+                            on_active:
+                                root.check_click(self, self.active, root.ids.p8.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p9
+                    text: "Hobby Roulette"
+                    secondary_text: "Have all your movie and series titles in one place!"
+                    icon: "movie"
+
+                    IconLeftWidget:
+                        id: i9
+                        icon: "movie" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p910
+                            on_active:
+                                #root.is_clicked(self, self.active, root.ids.p9.text)
+                                root.check_click(self, self.active, root.ids.p9.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p10
+                    text: "Find Your Home!"
+                    secondary_text: "Don't ever forget the path to your home!"
+                    icon: "map"
+
+                    IconLeftWidget:
+                        id: i10
+                        icon: "map" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p1010
+                            on_active:
+                                #root.is_clicked(self, self.active, root.ids.p10.text)
+                                root.check_click(self, self.active, root.ids.p10.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p11
+                    text: "Speech To Text"
+                    secondary_text: "Convert your voice to written text! (COMING SOON!)"
+                    icon: "map"
+
+                    IconLeftWidget:
+                        id: i11
+                        icon: "volume-high" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p1110
+                            on_active:
+                                #root.is_clicked(self, self.active, root.ids.p11.text)
+                                root.check_click(self, self.active, root.ids.p11.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+                TwoLineAvatarIconListItem:
+                    id: p12
+                    text: "Chat Room"
+                    secondary_text: "Find friends to talk with! (COMING SOON!)"
+                    icon: "map"
+
+                    IconLeftWidget:
+                        id: i12
+                        icon: "chat" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p1210
+                            on_active:
+                                #root.is_clicked(self, self.active, root.ids.p12.text)
+                                root.check_click(self, self.active, root.ids.p12.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+
+        HoverButton3:
+            id: cm
+            text: "Save"
+            font_size: 20
+            size_hint: .10, .10
+            on_release: root.save_checked()
 
 <CustomDialog>:
     title: "Please follow the guideline below:"

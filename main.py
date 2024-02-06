@@ -24,6 +24,23 @@ from kivymd.uix.textfield import MDTextField
 
 Window.size = (800, 600)
 
+# <---- Constants ---->
+
+ids_list = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12"]
+list_of_all_functions = ["Daily Diary", "Emotions Diary", "Acknowledgements Diary", "To-Do List",
+                         "Scheduler", "Text To Speech", "Shopping List","Book Manager", "Hobby Roulette",
+                         "Find Your Home!", "Speech To Text", "Chat Room"]
+
+boxes_ids_list = {"e10", "e2","e6", "e4", "e9", "e7"}
+
+# <---- Utils ---->
+def generate_map_of_functionalities(list_of_all_functions):
+    map_of_all_functions_and_ids = {}
+    for i in range(0, len(list_of_all_functions)):
+        map_of_all_functions_and_ids[list_of_all_functions[i]] = 0
+
+    return map_of_all_functions_and_ids
+
 # <---- Database ---->
 
 connector = sqlite3.connect('users.db')
@@ -238,6 +255,32 @@ class ChooseTypeAccountPage(MDScreen):
         Window.set_system_cursor('arrow')
 
 
+class CheckFunctionalitiesPage(MDScreen):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.map_of_all_functions_and_ids = generate_map_of_functionalities(list_of_all_functions)
+
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+
+        for id in ids_list:
+            current_check_text = self.ids[id].text
+            icons_id = self.ids[id + str(10)]
+            for i in self.map_of_all_functions_and_ids:
+                if (current_check_text == i and self.map_of_all_functions_and_ids[i] == 1):
+                    icons_id.active = True
+
+    def check_click(self, instance, value, text):
+        self.name = text
+
+        for i in self.map_of_all_functions_and_ids:
+            self.map_of_all_functions_and_ids[i] = 1 if text == i and value else 0
+
+    def save_checked(self):
+        self.manager.current = 'profile'
+
+
 
 # <---- App Class ---->
 
@@ -258,6 +301,7 @@ class SpectrumApp(MDApp):
         self.successful_signup_screen = SuccessfulSignupPage()
 
         self.choose_type_account_screen = ChooseTypeAccountPage()
+        self.check_functionalities_page = CheckFunctionalitiesPage()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -265,6 +309,7 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.successful_signup_screen)
 
         self.screen_manager.add_widget(self.choose_type_account_screen)
+        self.screen_manager.add_widget(self.check_functionalities_page)
 
 
         return self.screen_manager
