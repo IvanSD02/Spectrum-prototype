@@ -75,12 +75,15 @@
             MDCard:
                 size_hint: 0.6, 0.7
                 pos_hint: {"center_x":0.5,"center_y":0.5}
-                elevation: 9
+                elevation: 5
                 spacing: 25
                 orientation: 'vertical'
                 line_width:4
                 line_color:(0,0,0,0.5)
                 padding: (0, 50, 0, 20)
+                shadow_radius: 100
+                shadow_softness: 60
+                radius: [30, 30, 30, 30]
 
                 Label:
                     id: title
@@ -207,12 +210,15 @@
         MDCard:
             size_hint: 0.6, 0.7
             pos_hint: {"center_x":0.5,"center_y":0.5}
-            elevation: 6
+            elevation: 5
             spacing: 25
             padding: (0, 50, 0, 100)
             orientation: 'vertical'
             line_width:4
             line_color:(0,0,0,0.5)
+            shadow_radius: 100
+            shadow_softness: 60
+            radius: [30, 30, 30, 30]
 
             Label:
                 id: title
@@ -305,12 +311,15 @@
         md_bg_color: "wheat"
         size_hint:.8,.5
         pos_hint:{"center_x":0.5, "center_y":0.5}
-        elevation: 6
+        elevation: 5
         padding: 25
         spacing: 25
         orientation: 'vertical'
         line_width:4
         line_color:(0,0,0,0.5)
+        shadow_radius: 100
+        shadow_softness: 60
+        radius: [30, 30, 30, 30]
 
         Label:
             id: title
@@ -359,9 +368,12 @@
             text_color: 1, 1, 1, 1
             line_width: 2
             line_color: 0, 0, 0, 1
-            elevation: 6
+            elevation: 3
             spacing: 25
             padding: (0, 50, 0, 50)
+            shadow_radius: 50
+            shadow_softness: 60
+            radius: [30, 30, 30, 30]
 
             on_release:
                 root.manager.transition.direction = "left"
@@ -392,9 +404,12 @@
             text_color: 1, 1, 1, 1
             line_width: 2
             line_color: 0, 0, 0, 1
-            elevation: 6
+            elevation: 3
             spacing: 25
             padding: (0, 50, 0, 50)
+            shadow_radius: 50
+            shadow_softness: 60
+            radius: [30, 30, 30, 30]
 
             on_release:
                 root.manager.transition.direction = "left"
@@ -418,6 +433,18 @@
 
 <CheckFunctionalitiesPage>
     name: "checks_page"
+
+    MDIconButton:
+        icon: "chevron-left"
+        md_bg_color: "snow"
+        size_hint: .05, .06
+        user_font_size: "40sp"
+        pos_hint: {"center_x":.035, "center_y":.95}
+        theme_text_color:"Custom"
+        text_color: 1, 170/255, 23/255, 1
+        on_release:
+            root.manager.transition.direction = "right"
+            root.manager.current = "choose_type_account"
 
     GridLayout:
         cols:1
@@ -661,7 +688,7 @@
                                 #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
 
 
-        HoverButton3:
+        HoverButtonSaveChecks:
             id: cm
             text: "Save"
             font_size: 20
@@ -689,3 +716,126 @@
             text_color: self.theme_cls.primary_color
             on_release: root.dismiss()
 
+
+<ProfilePage>:
+    name: 'profile_page'
+
+    AnchorLayout:
+        anchor_y:'top'
+
+        MDGridLayout:
+            cols:1
+            #padding:20
+            #spacing:20
+
+            MDTopAppBar:
+                id: top
+                title: "SPECTRUM"
+                #md_bg_color: app.theme_cls.accent_color
+                left_action_items: [["menu", lambda x: root.drop_func(x)]]
+                right_action_items: [["theme-light-dark", lambda x: root.change_theme(app)], ["brush-variant", lambda x: root.change_but_color(app, root)], ["palette", lambda x: root.show_theme_picker(app)]]
+
+            ScrollView:
+                bar_width: 5
+                do_scroll_y: True
+                #pos_hint: {"center_x":0.5, "y":0.5}
+
+                GridLayout:
+                    cols:3
+                    rows:3
+                    padding:[dp(15),dp(15),dp(15),dp(35)]
+                    spacing:dp(15)
+
+                    ElementCard:
+                        image: "resources/to-do.png"
+                        id: e4
+                        text:"To-Do List"
+                        on_release:
+                            app.root.current = "todolist"
+
+                    ElementCard:
+                        image: "resources/hobby.png"
+                        id: e9
+                        text:"Hobby Roulette"
+                        on_release:
+                            app.root.current = "hobbyroulette"
+
+                    ElementCard:
+                        image: "resources/cart.png"
+                        id: e7
+                        text:"Shopping List"
+                        on_release:
+                            app.root.current = "shopping"
+
+                    ElementCard:
+                        image: "resources/map.png"
+                        id: e10
+                        text:"Find Your Home!"
+                        on_release:
+                            app.root.current = "findyourhome"
+
+                    ElementCard:
+                        image: "resources/emotion.png"
+                        id: e2
+                        text:"Emotions Diary"
+                        on_release:
+                            app.root.current = "emotion"
+
+                    ElementCard:
+                        image: "resources/speech.png"
+                        id: e6
+                        text:"Text To Speech"
+                        on_release:
+                            app.root.current = "texttospeech"
+
+            MDBottomAppBar
+                MDTopAppBar:
+                    id: bot
+                    title: "ORGANISE YOUR SPACE!"
+                    icon: "plus"
+                    type: "bottom"
+                    #on_action_button: root.create_page()
+                    right_action_items: [["emoticon-happy", lambda x: root.show_confirmation_dialog()]]
+
+<ElementCard@MDCard>:
+   #size: "280dp", "180dp"
+    #pos_hint: {"center_x": .5, "center_y": .5}
+    md_bg_color: "wheat"
+    padding:dp(15)
+    spacing:dp(15)
+    radius:dp(25)
+    ripple_behavior: True
+    elevation: 3
+    image:''
+    text:""
+
+    orientation:'vertical'
+    Image:
+        size_hint_y:.90
+        source:root.image
+    MDLabel:
+        halign:"center"
+        size_hint_y:.10
+        text:root.text
+
+<ListItem@OneLineAvatarIconListItem>:
+    IconLeftWidget:
+        id: i1
+        icon:"shopping-outline"
+    ItemCheckBox:
+
+<Item>
+    ImageLeftWidget:
+        source: root.source
+
+<Content>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+
+    BoxLayout:
+        orientation: "horizontal"
+    MDTextField:
+        id: field
+        hint_text: "Thoughts Of Today:"

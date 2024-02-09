@@ -1,5 +1,10 @@
 import sqlite3
 import re
+import random
+import datetime
+from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
+from scipy.spatial import KDTree
+
 
 from kivymd.app import MDApp
 
@@ -9,8 +14,9 @@ from kivy.clock import Clock
 
 from kivy.uix.screenmanager import ScreenManager
 from kivy.animation import Animation, AnimationTransition
-from kivy.properties import ListProperty
+from kivy.properties import ListProperty, StringProperty
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
 
 from kivymd.uix.behaviors import HoverBehavior
 from kivymd.theming import ThemableBehavior
@@ -19,6 +25,8 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFillRoundFlatButton, MDRaisedButton, MDFlatButton
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.list import OneLineAvatarListItem
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.textfield import MDTextField
 
@@ -28,18 +36,41 @@ Window.size = (800, 600)
 
 ids_list = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12"]
 list_of_all_functions = ["Daily Diary", "Emotions Diary", "Acknowledgements Diary", "To-Do List",
-                         "Scheduler", "Text To Speech", "Shopping List","Book Manager", "Hobby Roulette",
+                         "Scheduler", "Text To Speech", "Shopping List", "Book Manager", "Hobby Roulette",
                          "Find Your Home!", "Speech To Text", "Chat Room"]
 
 boxes_ids_list = {"e10", "e2","e6", "e4", "e9", "e7"}
 
+theme_colors = ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green',
+                'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
+
+
 # <---- Utils ---->
+
 def generate_map_of_functionalities(list_of_all_functions):
     map_of_all_functions_and_ids = {}
     for i in range(0, len(list_of_all_functions)):
         map_of_all_functions_and_ids[list_of_all_functions[i]] = 0
 
     return map_of_all_functions_and_ids
+
+def convert_rgb_to_names(rgb_tuple):
+    # a dictionary of all the hex and their respective names in css3
+    css3_db = CSS3_HEX_TO_NAMES
+    names = []
+    rgb_values = []
+
+    for color_hex, color_name in css3_db.items():
+        names.append(color_name)
+        rgb_values.append(hex_to_rgb(color_hex))
+
+    kdt_db = KDTree(rgb_values)
+    distance, index = kdt_db.query(rgb_tuple)
+    return f'{names[index]}'
+
+#tmp
+functions_dict = generate_map_of_functionalities(list_of_all_functions)
+print(functions_dict)
 
 # <---- Database ---->
 
@@ -87,7 +118,7 @@ class HoverButtonOriginal(Button, HoverBehavior):
     def on_leave(self):
         Window.set_system_cursor('arrow')
 
-class HoverButton3(MDRaisedButton, HoverBehavior):
+class HoverButtonSaveChecks(MDRaisedButton, HoverBehavior):
     def on_enter(self):
         Window.set_system_cursor('hand')
 
@@ -116,7 +147,12 @@ class HoverCardChooseProfile(MDCard, HoverBehavior):
         self.line_color = (0, 0, 0, 1)
         Animation(size_hint=(0.3, 0.5)).start(self)
 
+class ElementCard(MDCard):
+    pass
 
+class Item(OneLineAvatarListItem):
+    divider = None
+    source = StringProperty()
 
 # <---- Screens ---->
 
@@ -259,27 +295,191 @@ class CheckFunctionalitiesPage(MDScreen):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.map_of_all_functions_and_ids = generate_map_of_functionalities(list_of_all_functions)
-
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
         for id in ids_list:
             current_check_text = self.ids[id].text
             icons_id = self.ids[id + str(10)]
-            for i in self.map_of_all_functions_and_ids:
-                if (current_check_text == i and self.map_of_all_functions_and_ids[i] == 1):
+            for i in functions_dict:
+                if current_check_text == i and functions_dict[i] == 1:
                     icons_id.active = True
 
     def check_click(self, instance, value, text):
         self.name = text
 
-        for i in self.map_of_all_functions_and_ids:
-            self.map_of_all_functions_and_ids[i] = 1 if text == i and value else 0
+        for key in functions_dict:
+            if text != key:
+                continue
+            functions_dict[key] = 1 if value else 0
+
+        # for key in filter(lambda x: x != text, functions_dict.keys()):
+        #     functions_dict[key] = 1 if value else 0
 
     def save_checked(self):
-        self.manager.current = 'profile'
+        self.manager.current = 'profile_page'
 
+class ProfilePage(MDScreen):
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+        Window.size = (800, 600)
+
+        for i in functions_dict:
+            name_func = i
+            if functions_dict[name_func] == 1:
+
+                for j in boxes_ids_list:
+                    if self.ids[j].text == name_func:
+                        self.ids[j].disabled = False
+            else:
+                for j in boxes_ids_list:
+                    if self.ids[j].text == name_func:
+                        self.ids[j].disabled = True
+
+    def enter_in_file_emoji(self, input_emoji):
+        today = datetime.date.today()
+        wd = datetime.date.weekday(today)
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        year = str(datetime.datetime.now().year)
+        month = str(datetime.datetime.now().month)
+        day = str(datetime.datetime.now().day)
+
+        file_in = open("emotions.txt", 'a')
+        file_in.write(f"{days[wd]}, {day}.{month}.{year}")
+        file_in.write("\n")
+        file_in.write(input_emoji)
+        file_in.write("\n")
+        file_in.close()
+        self.show_next_dialog()
+
+    def enter_in_file_text(self, input_text):
+        file_in = open("emotions.txt", 'a')
+        file_in.write(input_text)
+        file_in.write("\n")
+        file_in.write("\n")
+        file_in.close()
+        self.dialog_close(self)
+
+    def create_page(self):
+        newCheck = CheckFunctionalitiesPage(name='checks_page_add')
+        self.manager.add_widget(newCheck)
+        self.manager.current = 'checks_page_add'
+
+    def show_next_dialog(self):
+        self.dialog = MDDialog(
+            title="Why Is That?",
+            type="custom",
+
+            content_cls=BoxLayout(),
+            buttons=[
+                MDFlatButton(
+                    text="NOT NOW",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release= lambda x: self.enter_in_file_text(self.dialog.content_cls.ids.field.text)
+                ),
+                MDFlatButton(
+                    text="DONE!",
+                    theme_text_color="Custom",
+                    text_color="black",
+                    on_release = lambda x: self.enter_in_file_text(self.dialog.content_cls.ids.field.text)#self.dialog.dismiss()
+                ),
+            ],
+        )
+        self.dialog.open()
+    def dialog_close(self, obj):
+        self.dialog.dismiss(force=True)
+
+    def show_confirmation_dialog(self):
+        self.dialog = MDDialog(
+                title="How are you feeling today?",
+                type="simple",
+                items=[
+                    Item(text="Absolutely Joyful!", source="happy.png", on_release=(lambda x: self.enter_in_file_emoji("Absolutely Joyful!")) ),
+                    Item(text="Really Happy!", source="smile.png", on_release=(lambda x: self.enter_in_file_emoji("Really Happy!")) ),
+                    Item(text="Pretty Average.", source="neutral.png", on_release=(lambda x: self.enter_in_file_emoji("Pretty Average.")) ),
+                    Item(text="A Bit Under The Weather...", source="sad.png", on_release=(lambda x: self.enter_in_file_emoji("A Bit Under The Weather...")) ),
+                    Item(text="Tearful...", source="cry.png", on_release=(lambda x: self.enter_in_file_emoji("Tearful...")) ),
+                ])
+
+        self.dialog.open()
+
+    def drop_func(self, instance):
+        self.menu_list = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Will be organised",
+                "on_release" : lambda x = "Example 1" : self.item1()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Will be emotional freely",
+                "on_release": lambda x="Example 2": self.item2()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Will know your way home",
+                "multiline": "True",
+                "on_release": lambda x="Example 2": self.item3()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Won't forget the groceries",
+                "multiline":"True",
+                "on_release": lambda x="Example 2": self.item4()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Won't forget daily tasks",
+                "multiline": "True",
+                "on_release": lambda x="Example 2": self.item5()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "Won't spend hours decision-making.",
+                "multiline": "True",
+                "on_release": lambda x="Example 2": self.item6()
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "text": "You will be yourself.",
+                "multiline": "True",
+                "on_release": lambda x="Example 2": self.item7()
+            },
+        ]
+
+        self.menu = MDDropdownMenu(
+            items = self.menu_list,
+            width_mult = 5
+        )
+
+        self.menu.caller = instance
+        self.menu.open()
+    def change_theme(self, root):
+        if root.theme_cls.theme_style == "Dark":
+            root.theme_cls.theme_style = "Light"
+        else:
+            root.theme_cls.theme_style = "Dark"
+    def show_theme_picker(self, root):
+        random_color = random.choice(theme_colors)
+        root.theme_cls.primary_palette = random_color
+        root.theme_cls.accent_palette = random_color
+
+    def change_but_color(self, app, root):
+        r = random.randint(0, 255)
+        g = random.randint(0, 255)
+        b = random.randint(0, 255)
+
+        rand = convert_rgb_to_names((r, g, b))
+
+        self.ids.bot.icon_color = rand
+        for i in boxes_ids_list:
+            #print(root.ids[i].md_bg_color)
+            root.ids[i].md_bg_color = rand
+
+    def call_checks_page(self):
+        self.manager.current = 'checks_page'
+    pass
 
 
 # <---- App Class ---->
@@ -302,6 +502,7 @@ class SpectrumApp(MDApp):
 
         self.choose_type_account_screen = ChooseTypeAccountPage()
         self.check_functionalities_page = CheckFunctionalitiesPage()
+        self.profile_page = ProfilePage()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -310,6 +511,7 @@ class SpectrumApp(MDApp):
 
         self.screen_manager.add_widget(self.choose_type_account_screen)
         self.screen_manager.add_widget(self.check_functionalities_page)
+        self.screen_manager.add_widget(self.profile_page)
 
 
         return self.screen_manager
