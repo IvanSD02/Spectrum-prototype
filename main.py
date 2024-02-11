@@ -2,15 +2,18 @@ import sqlite3
 import re
 import random
 import datetime
+
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 from scipy.spatial import KDTree
-
 
 from kivymd.app import MDApp
 
 from kivy.lang import Builder
 from kivy.graphics.svg import Window
+from kivy import Config
 from kivy.clock import Clock
+from kivy.metrics import dp
+
 
 from kivy.uix.screenmanager import ScreenManager
 from kivy.animation import Animation, AnimationTransition
@@ -18,7 +21,7 @@ from kivy.properties import ListProperty, StringProperty
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 
-from kivymd.uix.behaviors import HoverBehavior
+from kivymd.uix.behaviors import HoverBehavior, CommonElevationBehavior
 from kivymd.theming import ThemableBehavior
 
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -29,8 +32,14 @@ from kivymd.uix.list import OneLineAvatarListItem
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.textfield import MDTextField
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.snackbar import Snackbar
+from kivymd.uix.pickers import MDDatePicker
 
+# <---- Configuration ---->
 Window.size = (800, 600)
+#fix
+Config.set('graphics', 'resizable', False)
 
 # <---- Constants ---->
 
@@ -39,7 +48,9 @@ list_of_all_functions = ["Daily Diary", "Emotions Diary", "Acknowledgements Diar
                          "Scheduler", "Text To Speech", "Shopping List", "Book Manager", "Hobby Roulette",
                          "Find Your Home!", "Speech To Text", "Chat Room"]
 
-boxes_ids_list = {"e10", "e2","e6", "e4", "e9", "e7"}
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+boxes_ids_list = {"e10", "e2", "e6", "e4", "e9", "e7"}
 
 theme_colors = ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green',
                 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
@@ -68,6 +79,17 @@ def convert_rgb_to_names(rgb_tuple):
     distance, index = kdt_db.query(rgb_tuple)
     return f'{names[index]}'
 
+def create_datetime_format():
+    # return current date in printable format
+    today = datetime.date.today()
+    week_day = datetime.date.weekday(today)
+
+    year = str(datetime.datetime.now().year)
+    month = str(datetime.datetime.now().month)
+    day = str(datetime.datetime.now().day)
+
+    return f"{days[week_day]}, {day}.{month}.{year}"
+
 #tmp
 functions_dict = generate_map_of_functionalities(list_of_all_functions)
 print(functions_dict)
@@ -76,7 +98,11 @@ print(functions_dict)
 
 connector = sqlite3.connect('users.db')
 curs = connector.cursor()
+
 curs.execute("CREATE TABLE IF NOT EXISTS Login(Username VARCHAR, Password VARCHAR)")
+connector.commit()
+
+curs.execute("CREATE TABLE IF NOT EXISTS ToDo(P_Key INTEGER NOT NULL PRIMARY KEY, Title VARCHAR, Description VARCHAR, Priority VARCHAR, Date_Created VARCHAR, Active VARCHAR)")
 connector.commit()
 
 # <---- Widgets ---->
@@ -154,6 +180,22 @@ class Item(OneLineAvatarListItem):
     divider = None
     source = StringProperty()
 
+
+class TodoCard(CommonElevationBehavior, MDFloatLayout):
+    title = StringProperty()
+    description = StringProperty()
+    image = StringProperty()
+    date_created = StringProperty()
+
+    def effects(self, checkbox, value, id, title, description, bar):
+        TODOListBox.on_complete(self, checkbox, value, id, title, description, bar)
+    def remove_effects(self, button, id, title, description, bar):
+        TODOListBox.on_remove(self, button, id, title, description, bar)
+        self.ids.deleter.opacity = 0
+        self.ids.deleter.disabled = True
+        self.ids.check.opacity = 0
+        self.ids.check.disabled = True
+
 # <---- Screens ---->
 
 class MainPage(MDScreen):
@@ -173,6 +215,9 @@ class MainPage(MDScreen):
         return self.label
 
 class LoginPage(MDScreen):
+
+    #TODO - make textboxes not red and empty when you exit screen
+    #TODO - shadow does not disappear on reenter
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
@@ -339,12 +384,16 @@ class ProfilePage(MDScreen):
     def enter_in_file_emoji(self, input_emoji):
         today = datetime.date.today()
         wd = datetime.date.weekday(today)
+
+        #rework
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         year = str(datetime.datetime.now().year)
         month = str(datetime.datetime.now().month)
         day = str(datetime.datetime.now().day)
 
         file_in = open("emotions.txt", 'a')
+
+        #rework
         file_in.write(f"{days[wd]}, {day}.{month}.{year}")
         file_in.write("\n")
         file_in.write(input_emoji)
@@ -482,6 +531,179 @@ class ProfilePage(MDScreen):
     pass
 
 
+class TODOListBox(MDScreen):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.has_entered_once = False
+        self.date_created = create_datetime_format()
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+        Window.size = (400, 600)
+
+        # "0" -> active
+        # "1" -> completed
+        # "2" -> deleted
+
+        #TODO - if a task is completed, show below all not completed
+        #TODO - add a check to show completed tasks or not
+        #TODO - fix problem with elevation on second entering in the to-do app
+        #TODO - alert on a deadline
+        #TODO - link to database for login to make todo individual
+
+        #TODO - implement a sort by date
+        #TODO - implement a priority rising by date
+        #TODO - implement a deadline
+        #TODO - implement random priority based on a deadline
+
+        #TODO - fix design
+
+        self.ids.date.text = self.date_created
+
+        if self.has_entered_once:
+            return
+
+        curs.execute("SELECT * FROM ToDo")
+        data = curs.fetchall()
+        print(data)
+
+        self.has_entered_once = True
+
+        curs.execute("SELECT * FROM ToDo")
+        data = curs.fetchall()
+
+        for line in data:
+            out_id = line[0]
+            out_title = line[1]
+            out_desc = line[2]
+            out_image = line[3]
+            out_date_created = line[4]
+            out_done = line[5]
+
+            if out_done == "2":
+                continue
+            self.add_todo_box(out_title, out_desc, out_image, 1, str(out_id), str(out_date_created))
+
+    def on_complete(self, checkbox, value, ID, title, description, bar):
+
+        original = description.text
+        remove = ["[s]", "[/s]"]
+        for i in remove:
+            original = original.replace(i, "")
+
+        if self.ids.check.active:
+            description.text = f"[s]{description.text}[/s]"
+            bar.md_bg_color = 0, 179/255, 0, 1
+            Snackbar(text="Great job! One less thing to do!", snackbar_x="10dp", snackbar_y="10dp", size_hint_y=.08,
+                     size_hint_x=(Window.width - (dp(10) * 2)) / Window.width,
+                     bg_color=(0, 179/255, 0, 1), font_size="18sp").open()
+        else:
+            description.text = original
+            bar.md_bg_color = (1, 170/255, 23/255, 1)
+
+        if self.ids.check.active:
+            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("1", ID))
+        else:
+            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("0", ID))
+
+        connector.commit()
+        # test code
+        curs.execute("SELECT * FROM ToDo")
+        data = curs.fetchall()
+        print(data)
+
+
+    def on_remove(self, button, ID, title, description, bar):
+        print("id" + ID)
+        original = description.text
+        remove = ["[s]", "[/s]"]
+        for i in remove:
+            original = original.replace(i, "")
+        title.text += " (DELETED)"
+        #title.text = f"[s]{title.text}[/s]"
+        description.text = f"[s]{description.text}[/s]"
+        bar.md_bg_color = "red"
+
+        Snackbar(text="Task Removed", snackbar_x="10dp", snackbar_y="10dp", size_hint_y=.08,
+                 size_hint_x=(Window.width - (dp(10) * 2)) / Window.width,
+                 bg_color=(255, 0, 0, 0), font_size="18sp").open()
+
+        curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("2", ID))
+        connector.commit()
+
+        # test code
+        curs.execute("SELECT * FROM ToDo")
+        data = curs.fetchall()
+        print(data)
+
+
+
+    def add_todo_box(self, title, description, image, on_enter, ID=None, date=None):
+        # rework
+        source_str = ''
+
+        if image == '5':
+            source_str = 'resources/priority/five.png'
+        elif image == '4':
+            source_str = 'resources/priority/four.png'
+        elif image == '3':
+            source_str = 'resources/priority/three.png'
+        elif image == '2':
+            source_str = 'resources/priority/two.png'
+        else:
+            source_str = 'resources/priority/one.png'
+
+        curs.execute("SELECT * FROM ToDo")
+        results = curs.fetchall()
+        number_of_rows = len(results)
+
+        date = self.date_created if not date else date
+        week_day, data_format = date.split(" ")
+        date = date.replace(week_day, "Created: ")
+
+        if title != "" and description != "" and image != "" and len(title)<21 and len(description)<61:
+            self.manager.get_screen("todolist").todo_list.add_widget(TodoCard(id = str(number_of_rows + 1) if not ID else ID,
+                                    title = title, description = description, image = source_str , date_created = date))
+
+            self.manager.get_screen("add_todo_box").title.text = ""
+            self.manager.get_screen("add_todo_box").description.text = ""
+            self.manager.get_screen("add_todo_box").priority.text = ""
+
+            self.manager.current = 'todolist'
+            if not on_enter:
+
+                curs.execute("INSERT INTO ToDo (Title, Description, Priority, Date_Created, Active) VALUES (?, ?, ?, ?, ?)",
+                             (title, description, image, self.date_created, "0"))
+                connector.commit()
+
+                #test code
+                curs.execute("SELECT * FROM ToDo")
+                data = curs.fetchall()
+                print(data)
+
+        elif title=="":
+            Snackbar(text="Title is missing", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
+                     bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+        elif description=="":
+            Snackbar(text="Description is missing", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
+                     bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+        elif image=="":
+            Snackbar(text="Please, prioritise!", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
+                     bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+        elif not len(title)<21:
+            Snackbar(text="Title length is too long!(max: 20 characters)", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
+                     bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+        elif not len(description)<61:
+            Snackbar(text="Description length is too long!(max: 60 characters)", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
+                     bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+
+class AddListBox(MDScreen):
+    def show_date_picker(self):
+        date_dialog = MDDatePicker()
+        date_dialog.bind(on_save=self.on_save, on_cancel=self.on_cancel)
+        date_dialog.open()
+
+
 # <---- App Class ---->
 
 class SpectrumApp(MDApp):
@@ -504,6 +726,9 @@ class SpectrumApp(MDApp):
         self.check_functionalities_page = CheckFunctionalitiesPage()
         self.profile_page = ProfilePage()
 
+        self.todo_list_box = TODOListBox()
+        self.add_todo_box = AddListBox()
+
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
         self.screen_manager.add_widget(self.signup_screen)
@@ -512,6 +737,9 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.choose_type_account_screen)
         self.screen_manager.add_widget(self.check_functionalities_page)
         self.screen_manager.add_widget(self.profile_page)
+
+        self.screen_manager.add_widget(self.todo_list_box)
+        self.screen_manager.add_widget(self.add_todo_box)
 
 
         return self.screen_manager
