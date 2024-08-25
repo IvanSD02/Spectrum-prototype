@@ -841,6 +841,8 @@
         hint_text: "Thoughts Of Today:"
 
 <TodoCard>:
+    done: root.out_done
+
     elevation: 2
     md_bg_color: 1,1,1,1
     radius: [8]
@@ -887,11 +889,13 @@
         pos_hint: {"center_x": .51, "center_y": .4}
 
     MDLabel:
-        id: date_created
-        text: root.date_created
+        id: due_date
+        text: root.due_date
         markup: True
         size_hint: .4, .4
-        pos_hint: {"center_x": .23, "center_y": .12}
+        color: "grey"
+        font_name: "resources/Poppins-Regular.ttf"
+        pos_hint: {"center_x": .8, "center_y": .2}
 
     MDIconButton:
         id: deleter
@@ -908,6 +912,7 @@
     title: title
     description: description
     priority: image
+    due_date: due_date
 
     name: "add_todo_box"
     MDFloatLayout:
@@ -1016,48 +1021,46 @@
                 font_name: "resources/Poppins-Regular.ttf"
                 font_size:"18sp"
 
-        MDFloatLayout:
-            size_hint: .85, .08
-            pos_hint: {"center_x": .5, "center_y":.36}
-            canvas:
-                Color:
-                    rgba:(1,1,1,1)
-                RoundedRectangle:
-                    size:self.size
-                    pos:self.pos
-                    radius:[25]
-                Line:
-                    width: 2
-                    rectangle: self.x, self.y, self.width, self.height
-            MDTextField:
-                id: due_date
-                hint_text: "Due Date"
-                hint_text_color: (0,0,0,0.5)
-                size_hint:1,None
-                pos_hint: {"center_x": .5, "center_y":.5}
-                height: self.minimum_height
-                multiline: False
-                cursor_color: 1, 170/255, 23/255, 1
-                cursor_width: "2sp"
-                foreground_color: 1, 170/255, 23/255, 1
-                background_color:0,0,0,0
-                padding:15
-                font_name: "resources/Poppins-Regular.ttf"
-                icon_right: "calendar"
-                on_icon_right: root.
-                font_size:"18sp"
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: (55, 30, 55, 15)
+            spacing: 10
 
+            MDIconButton:
+                icon: 'calendar'
+                size_hint: .02, .08
+                pos_hint: {"center_x": .35, "center_y":.25}
+                md_bg_color: 1, 1, 1, 1
+                on_release:
+                    root.show_date_picker()
+
+            MDLabel:
+                id: due_date
+                text: "No Due"
+                size_hint: .1, .05
+                font_size: 20
+                halign: 'center'
+                font_name: "resources/Poppins-Regular.ttf"
+                pos_hint: {"center_x": .8, "center_y":.25}
+
+                canvas.before:
+                    Color:
+                        rgba: (1,1,1,1)
+                    RoundedRectangle:
+                        size:self.size
+                        pos:self.pos
+                        radius:[25]
 
         Button:
             text: "ADD TASK"
             size_hint: .45, .08
-            pos_hint: {"center_x": .5, "center_y":.25}
+            pos_hint: {"center_x": .5, "center_y":.15}
             font_name: "resources/Poppins-SemiBold.ttf"
             background_color:0,0,0,0
             font_size:"18sp"
             color:1,1,1,1
             on_release:
-                root.manager.get_screen('todolist').add_todo_box(title.text, description.text, image.text, 0)
+                root.manager.get_screen('todolist').add_todo_box(title.text, description.text, image.text, due_date.text, 0)
                 #root.manager.current = 'todolist'
             canvas.before:
                 Color:
@@ -1066,6 +1069,7 @@
                     size:self.size
                     pos:self.pos
                     radius:[25]
+
 
 <TODOListBox>:
     name: "todolist"
@@ -1123,3 +1127,65 @@
                 size_hint_y: None
                 padding: 15,10
                 spacing: 15,10
+
+<VerticalDatePicker>:
+    orientation: 'vertical'
+
+<TextToSpeech>
+    name:"texttospeech"
+    id:texttospeech
+    MDFloatLayout:
+        MDIconButton:
+            icon: "chevron-left"
+            user_font_size: "40sp"
+            pos_hint: {"center_y":.95}
+            theme_text_color:"Custom"
+            text_color: 1, 170/255, 23/255, 1
+            on_release:
+                root.manager.transition.direction = "right"
+                root.manager.current = "profile"
+        MDLabel:
+            text: "Text To Speech"
+            font_name: "resources/Poppins-Semibold.ttf"
+            pos_hint:{"center_y": .80}
+            bold: True
+            font_style: "H3"
+            halign: "center"
+        MDTextField:
+            id:text
+            hint_text: "Enter Text"
+            size_hint_x:.8
+            pos_hint:{"center_x":.5, "center_y": .4}
+        HoverButtonOriginal:
+            elevation: 3
+            text: "Speak!"
+            size_hint: .45, .08
+            pos_hint:{"center_x":.5, "center_y": .25}
+            on_release: root.speak()
+            font_name: "resources/Poppins-SemiBold.ttf"
+            background_color:0,0,0,0
+            font_size:"18sp"
+            color:1,1,1,1
+            ripple_behavior: True
+            canvas.before:
+                Color:
+                    rgb:(1, 170/255, 23/255, 1)
+                RoundedRectangle:
+                    size:self.size
+                    pos:self.pos
+                    radius:[25]
+        MDFloatLayout:
+            orientation: 'horizontal'
+            MDIconButton:
+                pos_hint: {"center_x":.35, "center_y": .1}
+                icon: "resources/man.png"
+                icon_size: "40sp"
+                on_release: root.change_voice_male()
+            MDIconButton:
+                pos_hint: {"center_x":.65, "center_y": .1}
+                icon: "resources/woman.png"
+                icon_size: "40sp"
+                on_release: root.change_voice_female()
+
+
+

@@ -3,6 +3,7 @@ import re
 import random
 import datetime
 
+import pyttsx3
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 from scipy.spatial import KDTree
 
@@ -90,6 +91,15 @@ def create_datetime_format():
 
     return f"{days[week_day]}, {day}.{month}.{year}"
 
+#TODO - fix function
+def string_to_bool(value):
+    if value.lower() in ('true', '1', 'yes'):
+        return True
+    elif value.lower() in ('false', '0', 'no'):
+        return False
+    else:
+        return None
+
 #tmp
 functions_dict = generate_map_of_functionalities(list_of_all_functions)
 print(functions_dict)
@@ -102,11 +112,12 @@ curs = connector.cursor()
 curs.execute("CREATE TABLE IF NOT EXISTS Login(Username VARCHAR, Password VARCHAR)")
 connector.commit()
 
-curs.execute("CREATE TABLE IF NOT EXISTS ToDo(P_Key INTEGER NOT NULL PRIMARY KEY, Title VARCHAR, Description VARCHAR, Priority VARCHAR, Date_Created VARCHAR, Active VARCHAR)")
+curs.execute("CREATE TABLE IF NOT EXISTS ToDo(P_Key INTEGER NOT NULL PRIMARY KEY, Title VARCHAR, Description VARCHAR, "
+             "Priority VARCHAR, Date_Created VARCHAR, Due_Date VARCHAR, Active VARCHAR)")
 connector.commit()
 
 # <---- Widgets ---->
-
+#TODO - Implement MDHeroTo
 class HoverButtonMainPage(MDFillRoundFlatButton, ThemableBehavior, HoverBehavior):
     def on_enter(self):
         Window.set_system_cursor('hand')
@@ -182,11 +193,21 @@ class Item(OneLineAvatarListItem):
 
 
 class TodoCard(CommonElevationBehavior, MDFloatLayout):
+
     title = StringProperty()
     description = StringProperty()
     image = StringProperty()
     date_created = StringProperty()
+    due_date = StringProperty()
+    out_done = StringProperty()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+        #fix
+        if string_to_bool(self.done):
+            self.ids.check.active = True
+            self.ids.description.text = f"[s]{self.ids.description.text}[/s]"
+            self.ids.bar.md_bg_color = 0, 179 / 255, 0, 1
     def effects(self, checkbox, value, id, title, description, bar):
         TODOListBox.on_complete(self, checkbox, value, id, title, description, bar)
     def remove_effects(self, button, id, title, description, bar):
@@ -195,6 +216,9 @@ class TodoCard(CommonElevationBehavior, MDFloatLayout):
         self.ids.deleter.disabled = True
         self.ids.check.opacity = 0
         self.ids.check.disabled = True
+
+class VerticalDatePicker(MDDatePicker):
+    pass
 
 # <---- Screens ---->
 
@@ -214,10 +238,13 @@ class MainPage(MDScreen):
 
         return self.label
 
+### Login, Signup and Account Management
+
 class LoginPage(MDScreen):
 
     #TODO - make textboxes not red and empty when you exit screen
     #TODO - shadow does not disappear on reenter
+    #TODO - hint background color blue
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
@@ -255,6 +282,8 @@ class LoginPage(MDScreen):
         self.ids.pwd.text = ""
 
 class SignupPage(MDScreen):
+
+    #TODO - hint background color blue
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
@@ -363,6 +392,8 @@ class CheckFunctionalitiesPage(MDScreen):
 
     def save_checked(self):
         self.manager.current = 'profile_page'
+
+### Home Page Layout & Settings
 
 class ProfilePage(MDScreen):
     def on_enter(self):
@@ -530,7 +561,9 @@ class ProfilePage(MDScreen):
         self.manager.current = 'checks_page'
     pass
 
+# <--- Application Screens --->
 
+# To - Do List
 class TODOListBox(MDScreen):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -545,7 +578,6 @@ class TODOListBox(MDScreen):
         # "1" -> completed
         # "2" -> deleted
 
-        #TODO - if a task is completed, show below all not completed
         #TODO - add a check to show completed tasks or not
         #TODO - fix problem with elevation on second entering in the to-do app
         #TODO - alert on a deadline
@@ -572,17 +604,40 @@ class TODOListBox(MDScreen):
         curs.execute("SELECT * FROM ToDo")
         data = curs.fetchall()
 
+        done_tasks = []
+
+        #better variant:
+        #for line in data:
+        #   out_id, out_title, out_desc, out_image, out_date_created, out_due_date, out_done = line
+
+
         for line in data:
             out_id = line[0]
             out_title = line[1]
             out_desc = line[2]
             out_image = line[3]
             out_date_created = line[4]
-            out_done = line[5]
+            out_due_date = line[5]
+            out_done = line[6]
+
+            if line == data[-1]:
+                if out_done == "0":
+                    self.add_todo_box(out_title, out_desc, out_image, out_due_date, 1, str(out_id),
+                                      str(out_date_created))
+                for task in done_tasks:
+                    self.add_todo_box(*task)
+
+            if out_done == "1":
+                done_tasks.append([out_title, out_desc, out_image, out_due_date, 1, str(out_id),
+                                      str(out_date_created), str(out_done)])
+                continue
 
             if out_done == "2":
                 continue
-            self.add_todo_box(out_title, out_desc, out_image, 1, str(out_id), str(out_date_created))
+
+            self.add_todo_box(out_title, out_desc, out_image, out_due_date, 1, str(out_id), str(out_date_created))
+
+
 
     def on_complete(self, checkbox, value, ID, title, description, bar):
 
@@ -638,7 +693,7 @@ class TODOListBox(MDScreen):
 
 
 
-    def add_todo_box(self, title, description, image, on_enter, ID=None, date=None):
+    def add_todo_box(self, title, description, image, due_date, on_enter, ID=None, date_created_task=None, out_done=None):
         # rework
         source_str = ''
 
@@ -657,23 +712,29 @@ class TODOListBox(MDScreen):
         results = curs.fetchall()
         number_of_rows = len(results)
 
-        date = self.date_created if not date else date
-        week_day, data_format = date.split(" ")
-        date = date.replace(week_day, "Created: ")
+        date_created_task = self.date_created if not date_created_task else date_created_task
+        week_day, data_format = date_created_task.split(" ")
+        date_created_task = date_created_task.replace(week_day, "Created: ")
 
-        if title != "" and description != "" and image != "" and len(title)<21 and len(description)<61:
+        new_due_date = " ".join(["Due: ", due_date])
+
+        if title != "" and description != "" and image != "" and len(title) < 21 and len(description) < 61:
             self.manager.get_screen("todolist").todo_list.add_widget(TodoCard(id = str(number_of_rows + 1) if not ID else ID,
-                                    title = title, description = description, image = source_str , date_created = date))
+                            title = title, description = description, image = source_str , date_created = date_created_task,
+                                                                            due_date = new_due_date, out_done = str(bool(out_done))))
+
 
             self.manager.get_screen("add_todo_box").title.text = ""
             self.manager.get_screen("add_todo_box").description.text = ""
             self.manager.get_screen("add_todo_box").priority.text = ""
+            self.manager.get_screen("add_todo_box").due_date.text = "No Due"
 
             self.manager.current = 'todolist'
+
             if not on_enter:
 
-                curs.execute("INSERT INTO ToDo (Title, Description, Priority, Date_Created, Active) VALUES (?, ?, ?, ?, ?)",
-                             (title, description, image, self.date_created, "0"))
+                curs.execute("INSERT INTO ToDo (Title, Description, Priority, Date_Created, Due_Date, Active) VALUES (?, ?, ?, ?, ?, ?)",
+                             (title, description, image, self.date_created, due_date, "0"))
                 connector.commit()
 
                 #test code
@@ -681,27 +742,73 @@ class TODOListBox(MDScreen):
                 data = curs.fetchall()
                 print(data)
 
+        # get into function with text parameter
         elif title=="":
             Snackbar(text="Title is missing", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
                      bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+
         elif description=="":
             Snackbar(text="Description is missing", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
                      bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+
         elif image=="":
             Snackbar(text="Please, prioritise!", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
                      bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+
         elif not len(title)<21:
             Snackbar(text="Title length is too long!(max: 20 characters)", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
                      bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
+
         elif not len(description)<61:
             Snackbar(text="Description length is too long!(max: 60 characters)", snackbar_x="10dp", snackbar_y = "10dp", size_hint_y = .08, size_hint_x = (Window.width - (dp(10)*2))/Window.width,
                      bg_color=(1,170/255,23/255, 1), font_size = "18sp").open()
 
-class AddListBox(MDScreen):
+
+class AddListBox(ThemableBehavior, MDScreen):
+    #TODO - label should be once again "No Due" when one reenters
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.date_dialog = VerticalDatePicker()
+        self.theme_cls.primary_palette = "Orange"
+
+    def on_save(self, instance, value, date_range):
+        formatted_date = value.strftime("%d.%m.%y")
+        self.ids.due_date.text = str(formatted_date)
+        self.theme_cls.device_orientation = "landscape"
+
+    def on_cancel(self, instance, value):
+        self.theme_cls.device_orientation = "landscape"
     def show_date_picker(self):
-        date_dialog = MDDatePicker()
-        date_dialog.bind(on_save=self.on_save, on_cancel=self.on_cancel)
-        date_dialog.open()
+        self.date_dialog.bind(on_save=self.on_save, on_cancel=self.on_cancel)
+        self.theme_cls.device_orientation = "portrait"
+        self.date_dialog.open()
+
+
+# Text To Speech
+
+class TextToSpeech(MDScreen):
+    # TODO - Adjust the volume of the speaker via a scroller
+    # TODO - Save voice to a file - have a button next to speak (maybe the three buttons this, speak and clear are on one line?)
+    # TODO - Have a button to clear the text
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.engine = pyttsx3.init('sapi5')
+        self.voices = self.engine.getProperty('voices')
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+        Window.size = (350, 490)
+    def speak(self):
+        self.engine.say(self.ids.text.text)
+        self.engine.runAndWait()
+    def change_voice_male(self):
+        self.engine.setProperty('voice', self.voices[0].id) # 0 index is for male
+
+    def change_voice_female(self):
+        self.engine.setProperty('voice', self.voices[1].id) # 1 index is for male
+
+    def on_leave(self):
+        self.engine.stop()
+
 
 
 # <---- App Class ---->
@@ -729,6 +836,8 @@ class SpectrumApp(MDApp):
         self.todo_list_box = TODOListBox()
         self.add_todo_box = AddListBox()
 
+        self.text_to_speech = TextToSpeech()
+
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
         self.screen_manager.add_widget(self.signup_screen)
@@ -740,6 +849,8 @@ class SpectrumApp(MDApp):
 
         self.screen_manager.add_widget(self.todo_list_box)
         self.screen_manager.add_widget(self.add_todo_box)
+
+        self.screen_manager.add_widget(self.text_to_speech)
 
 
         return self.screen_manager
