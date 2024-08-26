@@ -22,7 +22,7 @@ from kivy.properties import ListProperty, StringProperty
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 
-from kivymd.uix.behaviors import HoverBehavior, CommonElevationBehavior
+from kivymd.uix.behaviors import HoverBehavior, CommonElevationBehavior, FakeRectangularElevationBehavior
 from kivymd.theming import ThemableBehavior
 
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -219,6 +219,9 @@ class TodoCard(CommonElevationBehavior, MDFloatLayout):
 
 class VerticalDatePicker(MDDatePicker):
     pass
+
+class HobbyCard(FakeRectangularElevationBehavior, MDFloatLayout):
+    title = StringProperty()
 
 # <---- Screens ---->
 
@@ -809,7 +812,46 @@ class TextToSpeech(MDScreen):
     def on_leave(self):
         self.engine.stop()
 
+# Hobby Roulette
 
+class HobbyRoulette(MDScreen):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_hobby = 0
+    def on_enter(self, *args):
+        Window.size = Window.size = (600, 600)
+
+        file_out = open("resources/hobbies.txt", 'r')
+        lines = file_out.readlines()
+        if self.current_hobby != len(lines):
+            for i in range(self.current_hobby, len(lines)):
+                out_text = lines[i].strip()
+                self.add_entry(out_text, True)
+
+        current_hobby = len(lines)
+        # file_out.close()
+
+    def randomize(self):
+        random_hobbies = []
+        file_out = open("resources/hobbies.txt", 'r')
+        lines = file_out.readlines()
+        for i in lines:
+            line = i.strip()
+            random_hobbies.append(line)
+        # print(randoms)
+        random_hobby = random.choice(random_hobbies)
+        self.ids.randomize.text = random_hobby
+        file_out.close()
+
+    def add_entry(self, title, is_in):
+        self.manager.get_screen("hobbyroulette").hobbies_list.add_widget(HobbyCard(title=title))
+        self.current_hobby += 1
+        if not is_in:
+            file_in = open("resources/hobbies.txt", 'a')
+            file_in.write(title)
+            file_in.write("\n")
+            file_in.close()
 
 # <---- App Class ---->
 
@@ -837,6 +879,7 @@ class SpectrumApp(MDApp):
         self.add_todo_box = AddListBox()
 
         self.text_to_speech = TextToSpeech()
+        self.hobby_roulette = HobbyRoulette()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -851,6 +894,7 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.add_todo_box)
 
         self.screen_manager.add_widget(self.text_to_speech)
+        self.screen_manager.add_widget(self.hobby_roulette)
 
 
         return self.screen_manager

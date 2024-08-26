@@ -1187,5 +1187,116 @@
                 icon_size: "40sp"
                 on_release: root.change_voice_female()
 
+<HobbyCard>:
+    elevation: 2
+    md_bg_color:"#ffb900"
+    radius: [8]
+    size_hint_x: .1
+    #pos_hint: {"center_y":.8}
+    MDLabel:
+        id: title
+        text: root.title
+        markup: True
+        font_name: "resources/Poppins-SemiBold.ttf"
+        font_size: "20sp"
+        size_hint_x: .8
+        pos_hint:{"center_x": .46, "center_y": .6}
 
+
+<HobbyRoulette>:
+    name: "hobbyroulette"
+    id: hobbyroulette
+    hobbies_list: hobbies_list
+
+    MDFloatLayout:
+        MDIconButton:
+            icon: "chevron-left"
+            user_font_size: "40sp"
+            pos_hint: {"center_y":.95}
+            theme_text_color:"Custom"
+            text_color: 1, 170/255, 23/255, 1
+            on_release:
+                root.manager.transition.direction = "right"
+                root.manager.current = "profile"
+        MDLabel:
+            text: "Pick Your Hobby!"
+            color: "brown"
+            pos_hint: {"center_x": .75, "center_y": .95}
+            font_name: "resources/Poppins-Semibold.ttf"
+            font_size: "35sp"
+
+        ScrollView:
+            do_scroll_y:True
+            do_scroll_x:False
+            size_hint_y: .3
+            pos_hint: {"center_x": .5, "center_y":.75}
+            bar_width:0
+            GridLayout:
+                id: hobbies_list
+                cols: 1
+                height: self.minimum_height
+                row_default_height: 50
+                size_hint_y: None
+                padding: 15,10
+                spacing: 15,10
+
+        MDFloatLayout:
+            size_hint: .50, .08
+            pos_hint: {"center_x": .5, "center_y":.30}
+            canvas:
+                Color:
+                    rgba:(0,0,0,0.5)
+                RoundedRectangle:
+                    size:self.size
+                    pos:self.pos
+                    radius:[25]
+            TextInput:
+                id:randomize
+                disabled:True
+                hint_text:"Randomize Hobby!"
+                hint_text_color: (1,1,1,1)
+                size_hint:1,None
+                pos_hint: {"center_x": .5, "center_y":.5}
+                height: self.minimum_height
+                multiline: False
+                cursor_color: 1, 170/255, 23/255, 1
+                cursor_width: "2sp"
+                foreground_color: 1, 170/255, 23/255, 1
+                background_color:0,0,0,0
+                padding:15
+                font_name: "resources/Poppins-Regular.ttf"
+                font_size:"18sp"
+
+        MDFillRoundFlatButton:
+            text: "Randomize"
+            line_color:"black"
+            text_color:"white"
+            md_bg_color:"#ffb900"
+            font_size: 20
+            line_width: 1.2
+            pos_hint: {"center_x": .5, "center_y": .40}
+            on_press: root.randomize()
+        Label:
+            text:" "
+            font_size: 25
+        BoxLayout:
+            padding: 20
+            spacing: 20
+            pos_hint: {"center_x": .5, "center_y": .3}
+            MDTextField:
+                size_hint_x: .5
+                pos_hint: {"center_x": .5, "center_y": .30}
+                id: new_item
+                hint_text: "Enter New Hobby!"
+                helper_text_mode: "on_focus"
+
+            MDFillRoundFlatButton:
+                text: "Add Hobby"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"brown"
+                font_size: 20
+                line_width: 1.2
+                pos_hint: {"center_x": .5, "center_y": .30}
+                on_press: root.add_entry(new_item.text, False)
 
