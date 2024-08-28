@@ -688,6 +688,26 @@
                                 #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
 
 
+                TwoLineAvatarIconListItem:
+                    id: p13
+                    text: "Anti-Stress Doodles"
+                    secondary_text: "A magic pen will doodle for you and create figures, while you relax!(COMING SOON!)"
+                    icon: "map"
+
+                    IconLeftWidget:
+                        id: i13
+                        icon: "brush-variant" #root.icon
+
+                    IconRightWidget:
+                        icon: "resources/transparent.png"
+                        MDCheckbox:
+                            id: p1310
+                            on_active:
+                                #root.is_clicked(self, self.active, root.ids.p13.text)
+                                root.check_click(self, self.active, root.ids.p13.text)
+                                #app.save_checked(*args,root.ids.mm6.text,root.ids.mm6.secondary_text,root.ids.i1.icon,root)
+
+
         HoverButtonSaveChecks:
             id: cm
             text: "Save"
@@ -736,15 +756,18 @@
                 right_action_items: [["theme-light-dark", lambda x: root.change_theme(app)], ["brush-variant", lambda x: root.change_but_color(app, root)], ["palette", lambda x: root.show_theme_picker(app)]]
 
             ScrollView:
-                bar_width: 5
-                do_scroll_y: True
-                #pos_hint: {"center_x":0.5, "y":0.5}
+                size_hint_x: 1
+                size_hint_y: None
+                size: 800, 600
 
                 GridLayout:
                     cols:3
-                    rows:3
-                    padding:[dp(15),dp(15),dp(15),dp(35)]
-                    spacing:dp(15)
+                    row_default_height: 250
+                    row_force_default: True
+                    height: 900
+                    padding:[dp(15),dp(15),dp(15),dp(40)]
+                    spacing:dp(25)
+                    size_hint_y: None
 
                     ElementCard:
                         image: "resources/to-do.png"
@@ -788,6 +811,21 @@
                         on_release:
                             app.root.current = "texttospeech"
 
+                    ElementCard:
+                        image: "resources/diary.png"
+                        id: e1
+                        text:"Daily Diary"
+                        on_release:
+                            app.root.current = "dailydiary"
+
+                    ElementCard:
+                        image: "resources/doodle.png"
+                        id: e13
+                        text:"Anti-Stress Doodles"
+                        on_release:
+                            app.root.current = "doodles"
+
+
             MDBottomAppBar
                 MDTopAppBar:
                     id: bot
@@ -795,6 +833,9 @@
                     icon: "plus"
                     type: "bottom"
                     #on_action_button: root.create_page()
+                    on_action_button:
+                        root.manager.transition.direction = "right"
+                        root.create_page()
                     right_action_items: [["emoticon-happy", lambda x: root.show_confirmation_dialog()]]
 
 <ElementCard@MDCard>:
@@ -814,7 +855,7 @@
         size_hint_y:.90
         source:root.image
     MDLabel:
-        halign:"center"
+        halign: "center"
         size_hint_y:.10
         text:root.text
 
@@ -823,22 +864,6 @@
         id: i1
         icon:"shopping-outline"
     ItemCheckBox:
-
-<Item>
-    ImageLeftWidget:
-        source: root.source
-
-<Content>
-    orientation: "vertical"
-    spacing: "12dp"
-    size_hint_y: None
-    height: "120dp"
-
-    BoxLayout:
-        orientation: "horizontal"
-    MDTextField:
-        id: field
-        hint_text: "Thoughts Of Today:"
 
 <TodoCard>:
     done: root.out_done
@@ -1143,7 +1168,7 @@
             text_color: 1, 170/255, 23/255, 1
             on_release:
                 root.manager.transition.direction = "right"
-                root.manager.current = "profile"
+                root.manager.current = "profile_page"
         MDLabel:
             text: "Text To Speech"
             font_name: "resources/Poppins-Semibold.ttf"
@@ -1217,7 +1242,7 @@
             text_color: 1, 170/255, 23/255, 1
             on_release:
                 root.manager.transition.direction = "right"
-                root.manager.current = "profile"
+                root.manager.current = "profile_page"
         MDLabel:
             text: "Pick Your Hobby!"
             color: "brown"
@@ -1300,3 +1325,189 @@
                 pos_hint: {"center_x": .5, "center_y": .30}
                 on_press: root.add_entry(new_item.text, False)
 
+<AntistressDoodlesPage>:
+    name: "doodles"
+    id: doodles
+    doodles: doodles
+    md_bg_color: 163/255, 255/255, 172/255, 0.8
+
+    MDFloatLayout:
+        MDIconButton:
+            icon: "chevron-left"
+            user_font_size: "40sp"
+            pos_hint: {"center_y":.95}
+            theme_text_color:"Custom"
+            text_color: 1, 170/255, 23/255, 1
+            on_release:
+                root.manager.transition.direction = "right"
+                root.manager.current = "profile_page"
+
+
+    MDBoxLayout:
+        pos_hint: {'center_x': .5}
+        orientation: "vertical"
+        adaptive_width: True
+        spacing:dp(30)
+
+        MDLabel:
+            text: "Pick A Doodle!"
+            color: 0, 62/255, 6/255, 0.8
+            pos_hint: {"center_x": 0.75, "center_y": .95}
+            font_name: "resources/Poppins-Semibold.ttf"
+            font_size: "35sp"
+
+        Image:
+            source: 'resources/turtle.png'
+            size_hint: .7, .7
+            pos_hint: {"center_x":0.5, "center_y":0.5}
+
+        GridLayout:
+            cols: 3
+            size_hint: None, None
+            size: self.minimum_size
+            padding:[dp(15),dp(15),dp(15),dp(150)]
+            spacing:dp(25)
+
+            MDFillRoundFlatButton:
+                text: "Benzene"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_benzene_screen()
+
+            MDFillRoundFlatButton:
+                text: "Tree"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_tree_screen()
+
+            MDFillRoundFlatButton:
+                text: "Colorful Tree"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_colorful_tree_screen()
+
+            MDFillRoundFlatButton:
+                text: "Spiral"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_spiral_screen()
+
+            MDFillRoundFlatButton:
+                text: "Helix"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_helix_screen()
+
+            MDFillRoundFlatButton:
+                text: "Stars"
+                line_color:"black"
+                text_color:"white"
+                md_bg_color:"#ffb900"
+                font_size: 30
+                line_width: 1.2
+                on_press: root.draw_stars_screen()
+
+
+<ItemEmotion>
+    ImageLeftWidget:
+        source: root.source
+
+<ContentEmotion>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+
+    BoxLayout:
+        orientation: "horizontal"
+    MDTextField:
+        id: field
+        hint_text: "Thoughts Of Today:"
+
+<EmotionsCard>:
+    elevation: 2
+    md_bg_color: "wheat"
+    radius: [8]
+    #size_hint_y: .1
+    #pos_hint: {"center_y":.8}
+    MDLabel:
+        id: title
+        text: root.title
+        markup: True
+        font_name: "resources/Poppins-SemiBold.ttf"
+        font_size: "20sp"
+        size_hint_x: .8
+        pos_hint:{"center_x": .46, "center_y": .6}
+    MDLabel:
+        id:date
+        text: root.date
+        font_name: "resources/Poppins-SemiBold.ttf"
+        multiline: True
+        size_hint_x: .9
+        line_height: .8
+        pos_hint: {"center_x": .51, "center_y": .35}
+
+    MDLabel:
+        id:description
+        text: root.description
+        font_name: "resources/Poppins-SemiBold.ttf"
+        multiline: True
+        markup: True
+        size_hint_x: .9
+        line_height: .8
+        pos_hint: {"center_x": .51, "center_y": .05}
+
+
+<Emotion>:
+    name: "emotion"
+    emotions_list: emotions_list
+    MDFloatLayout:
+        #md_bg_color: 1,1,1,1
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'white.webp'
+        MDIconButton:
+            icon: "chevron-left"
+            user_font_size: "40sp"
+            pos_hint: {"center_y":.95}
+            theme_text_color:"Custom"
+            text_color: 1, 170/255, 23/255, 1
+            on_release:
+                root.manager.transition.direction = "right"
+                root.manager.current = "profile_page"
+        MDLabel:
+            text: "All Entries"
+            pos_hint: {"center_x": .80, "center_y": .95}
+            font_name: "resources/Poppins-Semibold.ttf"
+            font_size: "35sp"
+        ScrollView:
+            do_scroll_y:True
+            do_scroll_x:False
+            size_hint_y: .85
+            pos_hint: {"center_x": .5, "y":0}
+            bar_width:0
+            GridLayout:
+                id: emotions_list
+                cols: 1
+                height: self.minimum_height
+                row_default_height: 80
+                size_hint_y: None
+                padding: 15,10
+                spacing: 15,10

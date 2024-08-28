@@ -1,3 +1,4 @@
+# <---- Library imports ---->
 import sqlite3
 import re
 import random
@@ -37,21 +38,30 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.pickers import MDDatePicker
 
+# <---- File imports ---->
+import doodles.benzene_doodle as benzene_doodle
+import doodles.stars_doodle as star_doodle
+import doodles.colorful_tree_doodle as colorful_tree_doodle
+import doodles.helix_doodle as helix_doodle
+import doodles.tree_doodle as tree_doodle
+import doodles.spiral_doodle as spiral_doodle
+
 # <---- Configuration ---->
 Window.size = (800, 600)
 #fix
 Config.set('graphics', 'resizable', False)
 
 # <---- Constants ---->
+#TODO - give meaningful names to the constants
 
-ids_list = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12"]
+ids_list = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12", "p13"]
 list_of_all_functions = ["Daily Diary", "Emotions Diary", "Acknowledgements Diary", "To-Do List",
                          "Scheduler", "Text To Speech", "Shopping List", "Book Manager", "Hobby Roulette",
-                         "Find Your Home!", "Speech To Text", "Chat Room"]
+                         "Find Your Home!", "Speech To Text", "Chat Room", "Anti-Stress Doodles"]
 
 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-boxes_ids_list = {"e10", "e2", "e6", "e4", "e9", "e7"}
+boxes_ids_list = {"e10", "e2", "e6", "e4", "e9", "e7", "e1", "e13"}
 
 theme_colors = ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green',
                 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
@@ -118,6 +128,7 @@ connector.commit()
 
 # <---- Widgets ---->
 #TODO - Implement MDHeroTo
+#TODO - fix all shadows (remove them, or see what 1.2 KV will offer)
 class HoverButtonMainPage(MDFillRoundFlatButton, ThemableBehavior, HoverBehavior):
     def on_enter(self):
         Window.set_system_cursor('hand')
@@ -187,11 +198,6 @@ class HoverCardChooseProfile(MDCard, HoverBehavior):
 class ElementCard(MDCard):
     pass
 
-class Item(OneLineAvatarListItem):
-    divider = None
-    source = StringProperty()
-
-
 class TodoCard(CommonElevationBehavior, MDFloatLayout):
 
     title = StringProperty()
@@ -222,6 +228,19 @@ class VerticalDatePicker(MDDatePicker):
 
 class HobbyCard(FakeRectangularElevationBehavior, MDFloatLayout):
     title = StringProperty()
+
+class EmotionsCard(FakeRectangularElevationBehavior, MDFloatLayout):
+    title = StringProperty()
+    date = StringProperty()
+    description = StringProperty()
+
+class ContentEmotion(BoxLayout):
+    pass
+
+class ItemEmotion(OneLineAvatarListItem):
+    divider = None
+    source = StringProperty()
+
 
 # <---- Screens ---->
 
@@ -383,7 +402,8 @@ class CheckFunctionalitiesPage(MDScreen):
                     icons_id.active = True
 
     def check_click(self, instance, value, text):
-        self.name = text
+        #TODO - No need for text variable - remove from KV file for all 13 checks
+        #self.name = text
 
         for key in functions_dict:
             if text != key:
@@ -399,6 +419,8 @@ class CheckFunctionalitiesPage(MDScreen):
 ### Home Page Layout & Settings
 
 class ProfilePage(MDScreen):
+
+    # TODO - refactor heavily the emotions part
     def on_enter(self):
         Window.set_system_cursor('arrow')
         Window.size = (800, 600)
@@ -425,7 +447,7 @@ class ProfilePage(MDScreen):
         month = str(datetime.datetime.now().month)
         day = str(datetime.datetime.now().day)
 
-        file_in = open("emotions.txt", 'a')
+        file_in = open("resources/emotions.txt", 'a')
 
         #rework
         file_in.write(f"{days[wd]}, {day}.{month}.{year}")
@@ -436,7 +458,7 @@ class ProfilePage(MDScreen):
         self.show_next_dialog()
 
     def enter_in_file_text(self, input_text):
-        file_in = open("emotions.txt", 'a')
+        file_in = open("resources/emotions.txt", 'a')
         file_in.write(input_text)
         file_in.write("\n")
         file_in.write("\n")
@@ -444,16 +466,17 @@ class ProfilePage(MDScreen):
         self.dialog_close(self)
 
     def create_page(self):
-        newCheck = CheckFunctionalitiesPage(name='checks_page_add')
-        self.manager.add_widget(newCheck)
-        self.manager.current = 'checks_page_add'
+        #newCheck = CheckFunctionalitiesPage(name='checks_page_add')
+        #self.manager.add_widget(newCheck)
+        #self.manager.current = 'checks_page_add'
+        self.manager.current = 'checks_page'
 
     def show_next_dialog(self):
         self.dialog = MDDialog(
             title="Why Is That?",
             type="custom",
 
-            content_cls=BoxLayout(),
+            content_cls=ContentEmotion(),
             buttons=[
                 MDFlatButton(
                     text="NOT NOW",
@@ -478,11 +501,11 @@ class ProfilePage(MDScreen):
                 title="How are you feeling today?",
                 type="simple",
                 items=[
-                    Item(text="Absolutely Joyful!", source="happy.png", on_release=(lambda x: self.enter_in_file_emoji("Absolutely Joyful!")) ),
-                    Item(text="Really Happy!", source="smile.png", on_release=(lambda x: self.enter_in_file_emoji("Really Happy!")) ),
-                    Item(text="Pretty Average.", source="neutral.png", on_release=(lambda x: self.enter_in_file_emoji("Pretty Average.")) ),
-                    Item(text="A Bit Under The Weather...", source="sad.png", on_release=(lambda x: self.enter_in_file_emoji("A Bit Under The Weather...")) ),
-                    Item(text="Tearful...", source="cry.png", on_release=(lambda x: self.enter_in_file_emoji("Tearful...")) ),
+                    ItemEmotion(text="Absolutely Joyful!", source="resources/happy.png", on_release=(lambda x: self.enter_in_file_emoji("Absolutely Joyful!")) ),
+                    ItemEmotion(text="Really Happy!", source="resources/smile.png", on_release=(lambda x: self.enter_in_file_emoji("Really Happy!")) ),
+                    ItemEmotion(text="Pretty Average.", source="resources/neutral.png", on_release=(lambda x: self.enter_in_file_emoji("Pretty Average.")) ),
+                    ItemEmotion(text="A Bit Under The Weather...", source="resources/sad.png", on_release=(lambda x: self.enter_in_file_emoji("A Bit Under The Weather...")) ),
+                    ItemEmotion(text="Tearful...", source="resources/cry.png", on_release=(lambda x: self.enter_in_file_emoji("Tearful...")) ),
                 ])
 
         self.dialog.open()
@@ -815,7 +838,8 @@ class TextToSpeech(MDScreen):
 # Hobby Roulette
 
 class HobbyRoulette(MDScreen):
-
+    # TODO - Implement PyQT Spinning Wheel
+    # TODO - Center the label
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_hobby = 0
@@ -853,6 +877,61 @@ class HobbyRoulette(MDScreen):
             file_in.write("\n")
             file_in.close()
 
+# Anti-Stress Doodles
+
+class AntistressDoodlesPage(MDScreen):
+    # TODO - fix buttons formatting
+    # TODO - do not exit after the turtle window is closed
+    def on_enter(self):
+        Window.set_system_cursor('arrow')
+
+    def draw_benzene_screen(self):
+        benzene_doodle.draw_benzene()
+
+    def draw_tree_screen(self):
+        tree_doodle.draw_tree()
+
+    def draw_colorful_tree_screen(self):
+        colorful_tree_doodle.draw_colorful_tree()
+
+    def draw_spiral_screen(self):
+        spiral_doodle.draw_spiral()
+
+    def draw_helix_screen(self):
+        helix_doodle.draw_helix()
+
+    def draw_stars_screen(self):
+        star_doodle.example_draw_stars()
+
+
+# Emotions Diary
+
+class Emotion(MDScreen):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_line = 0
+    def on_enter(self):
+        Window.size = (450, 600)
+        file_out = open("resources/emotions.txt", 'r')
+        lines = file_out.readlines()
+
+        if self.current_line != len(lines):
+            for i in range(self.current_line, len(lines), 4):
+                out_date = lines[i]
+                out_emoji = lines[i+1]
+                out_text = lines[i+2]
+                print(out_date)
+                print(out_emoji)
+                print(out_text)
+                self.add_entry(out_date, out_emoji, out_text)
+
+        current_line = len(lines)
+
+    def add_entry(self, date, title, description):
+        self.manager.get_screen("emotion").emotions_list.add_widget(EmotionsCard(date=date, title = title, description = description))
+
+
 # <---- App Class ---->
 
 class SpectrumApp(MDApp):
@@ -880,6 +959,9 @@ class SpectrumApp(MDApp):
 
         self.text_to_speech = TextToSpeech()
         self.hobby_roulette = HobbyRoulette()
+        self.anti_stress_doodles = AntistressDoodlesPage()
+
+        self.emotions_diary = Emotion()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -895,6 +977,8 @@ class SpectrumApp(MDApp):
 
         self.screen_manager.add_widget(self.text_to_speech)
         self.screen_manager.add_widget(self.hobby_roulette)
+        self.screen_manager.add_widget(self.anti_stress_doodles)
+        self.screen_manager.add_widget(self.emotions_diary)
 
 
         return self.screen_manager
