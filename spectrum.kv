@@ -859,12 +859,6 @@
         size_hint_y:.10
         text:root.text
 
-<ListItem@OneLineAvatarIconListItem>:
-    IconLeftWidget:
-        id: i1
-        icon:"shopping-outline"
-    ItemCheckBox:
-
 <TodoCard>:
     done: root.out_done
 
@@ -1511,3 +1505,47 @@
                 size_hint_y: None
                 padding: 15,10
                 spacing: 15,10
+
+
+<ListItem@OneLineAvatarIconListItem>:
+    IconLeftWidget:
+        id: i1
+        icon:"shopping-outline"
+    ItemCheckBox:
+
+
+<Shopping>
+    name: "shopping"
+    BoxLayout:
+        name: "lists"
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title:"Shopping List"
+            md_bg_color: "coral"
+            elevation: 3
+            left_action_items: [["chevron-left", lambda x: root.change_screen()]]
+
+        BoxLayout:
+            orientation:'vertical'
+            padding: dp(48)
+            spacing: 10
+
+            MDTextField:
+                id: new_item
+                hint_text: "Enter new item here"
+                helper_text_mode: "on_focus"
+
+            MDFillRoundFlatButton:
+                text: "Add New Item"
+                line_color:"black"
+                text_color:"black"
+                md_bg_color:"coral"
+                font_size: 20
+                line_width: 1.2
+                pos_hint: {"center_x": .5}
+                on_press: root.add_item()
+
+            ScrollView:
+                MDList:
+                    id: list_item

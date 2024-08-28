@@ -10,6 +10,7 @@ from scipy.spatial import KDTree
 
 from kivymd.app import MDApp
 
+from kivy.factory import Factory
 from kivy.lang import Builder
 from kivy.graphics.svg import Window
 from kivy import Config
@@ -25,18 +26,19 @@ from kivy.uix.boxlayout import BoxLayout
 
 from kivymd.uix.behaviors import HoverBehavior, CommonElevationBehavior, FakeRectangularElevationBehavior
 from kivymd.theming import ThemableBehavior
-
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFillRoundFlatButton, MDRaisedButton, MDFlatButton
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.list import OneLineAvatarListItem
+from kivymd.uix.list import OneLineAvatarListItem, IRightBodyTouch
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.selectioncontrol import MDCheckbox
+
 
 # <---- File imports ---->
 import doodles.benzene_doodle as benzene_doodle
@@ -241,9 +243,12 @@ class ItemEmotion(OneLineAvatarListItem):
     divider = None
     source = StringProperty()
 
+class ItemCheckBox(IRightBodyTouch, MDCheckbox):
+    pass
+
 
 # <---- Screens ---->
-
+#TODO - fix inconsistencies in design - use the same things, like change the screen only in KV, f.e
 class MainPage(MDScreen):
 
     def animate_label_pop_up(self, *args):
@@ -931,6 +936,24 @@ class Emotion(MDScreen):
     def add_entry(self, date, title, description):
         self.manager.get_screen("emotion").emotions_list.add_widget(EmotionsCard(date=date, title = title, description = description))
 
+# Shopping List
+
+class Shopping(MDScreen):
+    #TODO - drag'n'drop with example png's
+    #TODO - add list to the database of a user
+    def on_enter(self):
+        items = []
+        for item in items:
+            self.ids.list_item.add_widget(Factory.ListItem(text=item))
+    def add_item(self):
+        new_item = self.ids.new_item.text
+        self.ids.list_item.add_widget(Factory.ListItem(text=new_item))
+        self.ids.new_item.text = ""
+    def remove_item(self):
+        old_item = self.ids.new_item.text
+    def change_screen(self):
+        self.manager.current = 'profile_page'
+    pass
 
 # <---- App Class ---->
 
@@ -960,8 +983,8 @@ class SpectrumApp(MDApp):
         self.text_to_speech = TextToSpeech()
         self.hobby_roulette = HobbyRoulette()
         self.anti_stress_doodles = AntistressDoodlesPage()
-
         self.emotions_diary = Emotion()
+        self.shopping_list = Shopping()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -979,6 +1002,7 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.hobby_roulette)
         self.screen_manager.add_widget(self.anti_stress_doodles)
         self.screen_manager.add_widget(self.emotions_diary)
+        self.screen_manager.add_widget(self.shopping_list)
 
 
         return self.screen_manager
