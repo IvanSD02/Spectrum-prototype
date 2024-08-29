@@ -3,8 +3,11 @@ import sqlite3
 import re
 import random
 import datetime
-
+import weakref
+import geocoder
 import pyttsx3
+import webview
+
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 from scipy.spatial import KDTree
 
@@ -38,6 +41,8 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
+
+from kivy_garden.mapview import MapMarker
 
 
 # <---- File imports ---->
@@ -912,7 +917,6 @@ class AntistressDoodlesPage(MDScreen):
 # Emotions Diary
 
 class Emotion(MDScreen):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_line = 0
@@ -955,6 +959,87 @@ class Shopping(MDScreen):
         self.manager.current = 'profile_page'
     pass
 
+# Find Your Home
+class FindYourHome(MDScreen):
+    #TODO - get coordinates from database
+    #TODO - is it hardcoded? please, check - i think they are probably not used, remove them drom KV file (lat, lon, etc)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.g = geocoder.ip('me')
+        print(self.g.latlng)
+        self.clicked = False
+
+        self.latitude = 0.0
+        self.longitude = 0.0
+
+    def get_latitude(self):
+        return self.latitude
+
+    def get_longitude(self):
+        return self.longitude
+    def on_enter(self, *args):
+        self.ids.map.add_widget(MapMarker(lat=self.g.latlng[0], lon=self.g.latlng[1]))
+        file_in = open("resources/homemap.txt", 'r')
+        lines = file_in.readlines()
+        self.latitude = lines[0].strip()
+        self.longitude = lines[1].strip()
+
+        marker = MapMarker(lat=self.latitude, lon=self.longitude, source="resources/housemarker.png")
+        self.ids.map.add_widget(marker)
+        self.ids['markermap'] = weakref.ref(marker)
+
+        self.clicked = True
+        file_in.close()
+
+    def add_address(self, latitude, longitude):
+        if not self.clicked:
+            marker = MapMarker(lat=latitude, lon=longitude, source="resources/housemarker.png")
+            self.ids.map.add_widget(marker)
+            self.ids['markermap'] = weakref.ref(marker)
+            self.clicked = True
+            self.ids.latitude.text = self.latitude
+            self.ids.longitude.text = self.longitude
+
+        else:
+            self.ids.map.remove_widget(self.ids.markermap)
+            marker = MapMarker(lat=latitude, lon=longitude, source="resources/housemarker.png")
+            self.ids.map.add_widget(marker)
+            self.ids['markermap'] = weakref.ref(marker)
+
+        file_out = open("resources/homemap.txt", 'w')
+        file_out.write(latitude)
+        file_out.write("\n")
+        file_out.write(longitude)
+        file_out.write("\n")
+        file_out.close()
+
+
+    def start_navigation(self):
+        latitude = self.ids.latitude.text
+        longitude = self.ids.longitude.text
+
+        # Validate inputs
+        if not latitude or not longitude:
+            print("Please enter valid latitude and longitude.")
+            return
+
+        try:
+            # Convert the inputs to float
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except ValueError:
+            print("Latitude and Longitude must be numbers.")
+            return
+
+        # Construct the Google Maps URL for navigation with maximum zoom
+        google_maps_url = (
+            f"https://www.google.com/maps/dir/?api=1&destination={latitude},{longitude}&travelmode=walking&dir_action=navigate&zoom=20"
+        )
+
+        # Open the URL in a new webview window
+        webview.create_window('Google Maps Navigation', google_maps_url, width=800, height=600)
+        webview.start()
+
 # <---- App Class ---->
 
 class SpectrumApp(MDApp):
@@ -985,6 +1070,7 @@ class SpectrumApp(MDApp):
         self.anti_stress_doodles = AntistressDoodlesPage()
         self.emotions_diary = Emotion()
         self.shopping_list = Shopping()
+        self.find_your_home = FindYourHome()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -1003,6 +1089,7 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.anti_stress_doodles)
         self.screen_manager.add_widget(self.emotions_diary)
         self.screen_manager.add_widget(self.shopping_list)
+        self.screen_manager.add_widget(self.find_your_home)
 
 
         return self.screen_manager

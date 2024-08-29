@@ -1549,3 +1549,119 @@
             ScrollView:
                 MDList:
                     id: list_item
+
+<FindYourHome>:
+    name:"findyourhome"
+    MapView:
+        id: map
+        lat: 42
+        lon: 23
+        zoom: 5
+        double_tap_zoom: True
+        #MapMarker:
+            #lat: 42
+            #lon: 23
+
+    MDIconButton:
+        icon: "chevron-left"
+        user_font_size: "40sp"
+        pos_hint: {"center_y":.95}
+        theme_text_color:"Custom"
+        text_color: 1, 170/255, 23/255, 1
+        on_release:
+            root.manager.transition.direction = "right"
+            root.manager.current = "profile_page"
+
+    MDFloatLayout:
+        size_hint: .50, .08
+        pos_hint: {"center_x": .5, "center_y":.40}
+        canvas:
+            Color:
+                rgba:(1,1,1,1)
+            RoundedRectangle:
+                size:self.size
+                pos:self.pos
+                radius:[25]
+
+        TextInput:
+            id:latitude
+            hint_text:"Latitude"
+            text: root.get_latitude()
+            hint_text_color: (0,0,0,0.5)
+            size_hint:1,None
+            pos_hint: {"center_x": .5, "center_y":.5}
+            height: self.minimum_height
+            #width: self.minimum_width
+            multiline: False
+            cursor_color: 1, 170/255, 23/255, 1
+            cursor_width: "2sp"
+            foreground_color: 1, 170/255, 23/255, 1
+            background_color:0,0,0,0
+            padding:15
+            font_name: "resources/Poppins-Regular.ttf"
+            font_size:"18sp"
+
+    MDFloatLayout:
+        size_hint: .50, .08
+        pos_hint: {"center_x": .5, "center_y":.30}
+        canvas:
+            Color:
+                rgba:(1,1,1,1)
+            RoundedRectangle:
+                size:self.size
+                pos:self.pos
+                radius:[25]
+        TextInput:
+            id:longitude
+            hint_text:"Longitude"
+            text: root.get_longitude()
+            hint_text_color: (0,0,0,0.5)
+            size_hint:1,None
+            pos_hint: {"center_x": .5, "center_y":.5}
+            height: self.minimum_height
+            multiline: False
+            cursor_color: 1, 170/255, 23/255, 1
+            cursor_width: "2sp"
+            foreground_color: 1, 170/255, 23/255, 1
+            background_color:0,0,0,0
+            padding:15
+            font_name: "resources/Poppins-Regular.ttf"
+            font_size:"18sp"
+
+    HoverButtonOriginal:
+        elevation: 3
+        text: "Edit Address"
+        size_hint: .45, .08
+        pos_hint:{"center_x":.5, "center_y": .20}
+        on_release:  root.add_address(latitude.text, longitude.text)
+        font_name: "resources/Poppins-SemiBold.ttf"
+        background_color:0,0,0,0
+        font_size:"18sp"
+        color:1,1,1,1
+        ripple_behavior: True
+        canvas.before:
+            Color:
+                rgb:(1, 170/255, 23/255, 1)
+            RoundedRectangle:
+                size:self.size
+                pos:self.pos
+                radius:[25]
+
+    HoverButtonOriginal:
+        elevation: 3
+        text: "Start"
+        size_hint: .45, .08
+        pos_hint:{"center_x":.5, "center_y": .20}
+        on_release:  root.start_navigation()
+        font_name: "resources/Poppins-SemiBold.ttf"
+        background_color:0,0,0,0
+        font_size:"18sp"
+        color:1,1,1,1
+        ripple_behavior: True
+        canvas.before:
+            Color:
+                rgb:(1, 170/255, 23/255, 1)
+            RoundedRectangle:
+                size:self.size
+                pos:self.pos
+                radius:[25]
