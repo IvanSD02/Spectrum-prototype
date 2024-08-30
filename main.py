@@ -3,10 +3,12 @@ import sqlite3
 import re
 import random
 import datetime
+import subprocess
 import weakref
 import geocoder
 import pyttsx3
 import webview
+import webbrowser
 
 from webcolors import CSS3_HEX_TO_NAMES, hex_to_rgb
 from scipy.spatial import KDTree
@@ -19,7 +21,6 @@ from kivy.graphics.svg import Window
 from kivy import Config
 from kivy.clock import Clock
 from kivy.metrics import dp
-
 
 from kivy.uix.screenmanager import ScreenManager
 from kivy.animation import Animation, AnimationTransition
@@ -53,6 +54,7 @@ import doodles.helix_doodle as helix_doodle
 import doodles.tree_doodle as tree_doodle
 import doodles.spiral_doodle as spiral_doodle
 
+
 # <---- Configuration ---->
 Window.size = (800, 600)
 #fix
@@ -63,12 +65,12 @@ Config.set('graphics', 'resizable', False)
 
 ids_list = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10", "p11", "p12", "p13"]
 list_of_all_functions = ["Daily Diary", "Emotions Diary", "Acknowledgements Diary", "To-Do List",
-                         "Scheduler", "Text To Speech", "Shopping List", "Book Manager", "Hobby Roulette",
+                         "Scheduler", "Text To Speech", "Shopping List", "Collection Manager", "Hobby Roulette",
                          "Find Your Home!", "Speech To Text", "Chat Room", "Anti-Stress Doodles"]
 
 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-boxes_ids_list = {"e10", "e2", "e6", "e4", "e9", "e7", "e1", "e13"}
+boxes_ids_list = {"e10", "e2", "e6", "e4", "e9", "e7", "e1", "e13", "e8"}
 
 theme_colors = ['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue', 'Cyan', 'Teal', 'Green',
                 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange', 'Brown', 'Gray', 'BlueGray']
@@ -117,6 +119,22 @@ def string_to_bool(value):
     else:
         return None
 
+class Singleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__new__(cls)
+            cls._instance.user = None
+        return cls._instance
+
+    def modify_user(self, new_value):
+        self.user = new_value
+
+    def get_user(self):
+        return self.user
+
+
 #tmp
 functions_dict = generate_map_of_functionalities(list_of_all_functions)
 print(functions_dict)
@@ -130,7 +148,11 @@ curs.execute("CREATE TABLE IF NOT EXISTS Login(Username VARCHAR, Password VARCHA
 connector.commit()
 
 curs.execute("CREATE TABLE IF NOT EXISTS ToDo(P_Key INTEGER NOT NULL PRIMARY KEY, Title VARCHAR, Description VARCHAR, "
-             "Priority VARCHAR, Date_Created VARCHAR, Due_Date VARCHAR, Active VARCHAR)")
+             "Priority VARCHAR, Date_Created VARCHAR, Due_Date VARCHAR, Active VARCHAR, Username VARCHAR)")
+
+curs.execute("CREATE TABLE IF NOT EXISTS Shopping(P_Key INTEGER NOT NULL PRIMARY KEY, Grocery VARCHAR, Active VARCHAR,"
+             "Username VARCHAR)")
+
 connector.commit()
 
 # <---- Widgets ---->
@@ -215,6 +237,7 @@ class TodoCard(CommonElevationBehavior, MDFloatLayout):
     out_done = StringProperty()
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.singleton = Singleton()
 
         #fix
         if string_to_bool(self.done):
@@ -249,7 +272,21 @@ class ItemEmotion(OneLineAvatarListItem):
     source = StringProperty()
 
 class ItemCheckBox(IRightBodyTouch, MDCheckbox):
-    pass
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.singleton = Singleton()
+    def remove_item_on_click(self, list_item):
+        self.user = self.singleton.get_user()
+        grocery = list_item.text
+        print(self.user)
+        print(grocery)
+
+        curs.execute(
+            "DELETE FROM Shopping WHERE Grocery = ? AND Username = ?",
+            (grocery, self.user))
+        connector.commit()
 
 
 # <---- Screens ---->
@@ -277,6 +314,11 @@ class LoginPage(MDScreen):
     #TODO - make textboxes not red and empty when you exit screen
     #TODO - shadow does not disappear on reenter
     #TODO - hint background color blue
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.singleton = Singleton()
+
     def on_enter(self):
         Window.set_system_cursor('arrow')
 
@@ -308,6 +350,10 @@ class LoginPage(MDScreen):
 
         self.manager.transition.direction = "left"
         self.animate_loading_wheel()
+
+        # Update the current user variable
+        self.singleton.modify_user(username)
+        print(self.singleton.get_user())
 
     def clear(self):
         self.ids.uid.text = ""
@@ -413,7 +459,6 @@ class CheckFunctionalitiesPage(MDScreen):
 
     def check_click(self, instance, value, text):
         #TODO - No need for text variable - remove from KV file for all 13 checks
-        #self.name = text
 
         for key in functions_dict:
             if text != key:
@@ -524,43 +569,43 @@ class ProfilePage(MDScreen):
         self.menu_list = [
             {
                 "viewclass": "OneLineListItem",
-                "text": "Will be organised",
-                "on_release" : lambda x = "Example 1" : self.item1()
+                "text": "Will be organised!",
+                "on_release" : lambda x = "Example 1" : self.open_website("https://www.additudemag.com/how-to-get-organized-with-adhd/")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "Will be emotional freely",
-                "on_release": lambda x="Example 2": self.item2()
+                "text": "Will be emotionally free!",
+                "on_release": lambda x="Example 2": self.open_website("https://www.healthline.com/health/how-to-control-your-emotions")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "Will know your way home",
+                "text": "Will know your way home!",
                 "multiline": "True",
-                "on_release": lambda x="Example 2": self.item3()
+                "on_release": lambda x="Example 3": self.open_website("https://www.healthychildren.org/English/health-issues/conditions/Autism/Pages/Autism-Wandering-Tips-AAP.aspx")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "Won't forget the groceries",
+                "text": "Won't forget the groceries!",
                 "multiline":"True",
-                "on_release": lambda x="Example 2": self.item4()
+                "on_release": lambda x="Example 4": self.open_website("https://www.eatingwell.com/article/7991038/dietitian-on-a-budget-how-i-organize-my-grocery-list/")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "Won't forget daily tasks",
+                "text": "Won't forget daily tasks!",
                 "multiline": "True",
-                "on_release": lambda x="Example 2": self.item5()
+                "on_release": lambda x="Example 5": self.open_website("https://www.linkedin.com/advice/1/how-can-you-avoid-neglecting-important-tasks-hz1uc")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "Won't spend hours decision-making.",
+                "text": "Won't spend hours decision-making!",
                 "multiline": "True",
-                "on_release": lambda x="Example 2": self.item6()
+                "on_release": lambda x="Example 6": self.open_website("https://mchwdc.unc.edu/wp-content/uploads/2020/11/SI-2020-Decision-Making-Guide-Tips-and-Tricks-for-When-We-Get-Stuck1.pdf")
             },
             {
                 "viewclass": "OneLineListItem",
-                "text": "You will be yourself.",
+                "text": "Will be yourself!",
                 "multiline": "True",
-                "on_release": lambda x="Example 2": self.item7()
+                "on_release": lambda x="Example 7": self.open_website("https://www.connections-counselling.co.uk/blog/top-10-tips-for-autistic-well-being/")
             },
         ]
 
@@ -595,7 +640,9 @@ class ProfilePage(MDScreen):
 
     def call_checks_page(self):
         self.manager.current = 'checks_page'
-    pass
+
+    def open_website(self, site):
+        webbrowser.open(site, new=2)
 
 # <--- Application Screens --->
 
@@ -606,7 +653,14 @@ class TODOListBox(MDScreen):
 
         self.has_entered_once = False
         self.date_created = create_datetime_format()
+
+        self.singleton = Singleton()
+
+
     def on_enter(self):
+        self.user = self.singleton.get_user()
+        print(self.user)
+
         Window.set_system_cursor('arrow')
         Window.size = (400, 600)
 
@@ -616,6 +670,7 @@ class TODOListBox(MDScreen):
 
         #TODO - add a check to show completed tasks or not
         #TODO - fix problem with elevation on second entering in the to-do app
+        #TODO - fix bug with duplicates on reenter
         #TODO - alert on a deadline
         #TODO - link to database for login to make todo individual
 
@@ -631,13 +686,13 @@ class TODOListBox(MDScreen):
         if self.has_entered_once:
             return
 
-        curs.execute("SELECT * FROM ToDo")
+        curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
         data = curs.fetchall()
         print(data)
 
         self.has_entered_once = True
 
-        curs.execute("SELECT * FROM ToDo")
+        curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
         data = curs.fetchall()
 
         done_tasks = []
@@ -676,6 +731,8 @@ class TODOListBox(MDScreen):
 
 
     def on_complete(self, checkbox, value, ID, title, description, bar):
+        self.user = self.singleton.get_user()
+        print(self.user)
 
         original = description.text
         remove = ["[s]", "[/s]"]
@@ -693,18 +750,21 @@ class TODOListBox(MDScreen):
             bar.md_bg_color = (1, 170/255, 23/255, 1)
 
         if self.ids.check.active:
-            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("1", ID))
+            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ? AND Username = ?", ("1", ID, self.user))
         else:
-            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("0", ID))
+            curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ? AND Username = ?", ("0", ID, self.user))
 
         connector.commit()
         # test code
-        curs.execute("SELECT * FROM ToDo")
+        curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
         data = curs.fetchall()
-        print(data)
+        # print(data)
 
 
     def on_remove(self, button, ID, title, description, bar):
+        self.user = self.singleton.get_user()
+        print(self.user)
+
         print("id" + ID)
         original = description.text
         remove = ["[s]", "[/s]"]
@@ -719,11 +779,11 @@ class TODOListBox(MDScreen):
                  size_hint_x=(Window.width - (dp(10) * 2)) / Window.width,
                  bg_color=(255, 0, 0, 0), font_size="18sp").open()
 
-        curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ?", ("2", ID))
+        curs.execute("UPDATE ToDo SET Active= ? WHERE P_Key = ? AND Username = ?", ("2", ID, self.user))
         connector.commit()
 
         # test code
-        curs.execute("SELECT * FROM ToDo")
+        curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
         data = curs.fetchall()
         print(data)
 
@@ -744,7 +804,7 @@ class TODOListBox(MDScreen):
         else:
             source_str = 'resources/priority/one.png'
 
-        curs.execute("SELECT * FROM ToDo")
+        curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
         results = curs.fetchall()
         number_of_rows = len(results)
 
@@ -756,8 +816,8 @@ class TODOListBox(MDScreen):
 
         if title != "" and description != "" and image != "" and len(title) < 21 and len(description) < 61:
             self.manager.get_screen("todolist").todo_list.add_widget(TodoCard(id = str(number_of_rows + 1) if not ID else ID,
-                            title = title, description = description, image = source_str , date_created = date_created_task,
-                                                                            due_date = new_due_date, out_done = str(bool(out_done))))
+                            title=title, description=description, image=source_str , date_created=date_created_task,
+                                                                            due_date=new_due_date, out_done=str(bool(out_done))))
 
 
             self.manager.get_screen("add_todo_box").title.text = ""
@@ -769,12 +829,12 @@ class TODOListBox(MDScreen):
 
             if not on_enter:
 
-                curs.execute("INSERT INTO ToDo (Title, Description, Priority, Date_Created, Due_Date, Active) VALUES (?, ?, ?, ?, ?, ?)",
-                             (title, description, image, self.date_created, due_date, "0"))
+                curs.execute("INSERT INTO ToDo (Title, Description, Priority, Date_Created, Due_Date, Active , Username) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                             (title, description, image, self.date_created, due_date, "0", self.user))
                 connector.commit()
 
                 #test code
-                curs.execute("SELECT * FROM ToDo")
+                curs.execute("SELECT * FROM ToDo WHERE Username = ?", (self.user,))
                 data = curs.fetchall()
                 print(data)
 
@@ -943,26 +1003,48 @@ class Emotion(MDScreen):
 # Shopping List
 
 class Shopping(MDScreen):
-    #TODO - drag'n'drop with example png's
-    #TODO - add list to the database of a user
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.singleton = Singleton()
+        self.has_entered_once = False
     def on_enter(self):
+        self.user = self.singleton.get_user()
+        self.has_entered_once = True
+
         items = []
         for item in items:
             self.ids.list_item.add_widget(Factory.ListItem(text=item))
-    def add_item(self):
-        new_item = self.ids.new_item.text
+
+        curs.execute("SELECT * FROM Shopping WHERE Username = ?", (self.user,))
+        data = curs.fetchall()
+        print(data)
+
+        if not self.has_entered_once:
+            for line in data:
+                self.add_item(line[1])
+
+    def add_item(self, new_item=None):
+        if new_item is None:
+            new_item = self.ids.new_item.text
         self.ids.list_item.add_widget(Factory.ListItem(text=new_item))
+
+        curs.execute(
+            "INSERT INTO Shopping (Grocery, Active ,Username) VALUES (?, ?, ?)",
+            (new_item, "0", self.user))
+        connector.commit()
+
+        curs.execute("SELECT * FROM Shopping WHERE Username = ?", (self.user,))
+        data = curs.fetchall()
+        print(data)
+
         self.ids.new_item.text = ""
-    def remove_item(self):
-        old_item = self.ids.new_item.text
     def change_screen(self):
         self.manager.current = 'profile_page'
-    pass
 
 # Find Your Home
 class FindYourHome(MDScreen):
     #TODO - get coordinates from database
-    #TODO - is it hardcoded? please, check - i think they are probably not used, remove them drom KV file (lat, lon, etc)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.g = geocoder.ip('me')
@@ -1040,9 +1122,14 @@ class FindYourHome(MDScreen):
         webview.create_window('Google Maps Navigation', google_maps_url, width=800, height=600)
         webview.start()
 
+
+
 # <---- App Class ---->
 
 class SpectrumApp(MDApp):
+
+    def start_mng(self):
+        subprocess.Popen(["python", "book_manager/book_main.py"])
     def build(self):
         self.icon = 'resources/puzzle.png'
 

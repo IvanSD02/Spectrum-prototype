@@ -1,0 +1,3 @@
+0|The Stand|Stephen King|Fantasy|1975|4.8
+1|The Werewolf|Clifford Simak|Fantasy|1967|4.3
+2|||||

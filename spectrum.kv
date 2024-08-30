@@ -595,8 +595,8 @@
 
                 TwoLineAvatarIconListItem:
                     id: p8
-                    text: "Book Manager"
-                    secondary_text: "Have all your book titles in one place! (COMING SOON!)"
+                    text: "Collection Manager"
+                    secondary_text: "Have all your book, game and movie titles in one place!"
                     icon: "book"
 
                     IconLeftWidget:
@@ -614,7 +614,7 @@
                 TwoLineAvatarIconListItem:
                     id: p9
                     text: "Hobby Roulette"
-                    secondary_text: "Have all your movie and series titles in one place!"
+                    secondary_text: "When you can't make a choice, take a chance!"
                     icon: "movie"
 
                     IconLeftWidget:
@@ -691,7 +691,7 @@
                 TwoLineAvatarIconListItem:
                     id: p13
                     text: "Anti-Stress Doodles"
-                    secondary_text: "A magic pen will doodle for you and create figures, while you relax!(COMING SOON!)"
+                    secondary_text: "A magic pen will doodle for you and create figures, while you relax!"
                     icon: "map"
 
                     IconLeftWidget:
@@ -824,6 +824,13 @@
                         text:"Anti-Stress Doodles"
                         on_release:
                             app.root.current = "doodles"
+
+                    ElementCard:
+                        image: "resources/books.png"
+                        id: e8
+                        text:"Collection Manager"
+                        on_release:
+                            app.start_mng()
 
 
             MDBottomAppBar
@@ -1508,10 +1515,13 @@
 
 
 <ListItem@OneLineAvatarIconListItem>:
+    id: list_item
     IconLeftWidget:
         id: i1
         icon:"shopping-outline"
     ItemCheckBox:
+        id: check
+        on_active: self.remove_item_on_click(list_item)
 
 
 <Shopping>
@@ -1551,16 +1561,11 @@
                     id: list_item
 
 <FindYourHome>:
-    name:"findyourhome"
+    name: "findyourhome"
     MapView:
         id: map
-        lat: 42
-        lon: 23
         zoom: 5
         double_tap_zoom: True
-        #MapMarker:
-            #lat: 42
-            #lon: 23
 
     MDIconButton:
         icon: "chevron-left"
@@ -1586,7 +1591,7 @@
         TextInput:
             id:latitude
             hint_text:"Latitude"
-            text: root.get_latitude()
+            # text: root.get_latitude()
             hint_text_color: (0,0,0,0.5)
             size_hint:1,None
             pos_hint: {"center_x": .5, "center_y":.5}
@@ -1614,7 +1619,7 @@
         TextInput:
             id:longitude
             hint_text:"Longitude"
-            text: root.get_longitude()
+            # text: root.get_longitude()
             hint_text_color: (0,0,0,0.5)
             size_hint:1,None
             pos_hint: {"center_x": .5, "center_y":.5}
