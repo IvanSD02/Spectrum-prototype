@@ -1670,3 +1670,74 @@
                 size:self.size
                 pos:self.pos
                 radius:[25]
+
+<DailyDiary>:
+    name: "dailydiary"
+    MDFloatLayout:
+        md_bg_color: "wheat"
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'white.png'
+        MDIconButton:
+            icon: "chevron-left"
+            user_font_size: "40sp"
+            pos_hint: {"center_y":.95}
+            theme_text_color:"Custom"
+            text_color: 1, 170/255, 23/255, 1
+            on_release:
+                root.manager.transition.direction = "right"
+                root.manager.current = "todolist"
+        MDLabel:
+            text: "Write your story!"
+            pos_hint: {"center_x": .85, "center_y":.88}
+            font_name: "resources/Poppins-SemiBold.ttf"
+            font_size:"35sp"
+
+        MDFloatLayout:
+            size_hint: .85, .5
+            pos_hint: {"center_x": .5, "center_y":.57}
+            canvas:
+                Color:
+                    rgba:(1,1,1,1)
+                RoundedRectangle:
+                    size:self.size
+                    pos:self.pos
+                    radius:[25]
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height
+            TextInput:
+                id: description
+                hint_text:"Write about your day here..."
+                hint_text_color: (0,0,0,0.5)
+                size_hint:1,None
+                pos_hint: {"center_x": .5, "center_y":.5}
+                height: 180
+                cursor_color: 1, 170/255, 23/255, 1
+                cursor_width: "2sp"
+                foreground_color: 1, 170/255, 23/255, 1
+                background_color:0,0,0,0
+                padding:15
+                font_name: "resources/Poppins-Regular.ttf"
+                font_size:"18sp"
+
+        Button:
+            text: "SAVE"
+            size_hint: .45, .08
+            pos_hint: {"center_x": .5, "center_y":.15}
+            font_name: "resources/Poppins-SemiBold.ttf"
+            background_color:0,0,0,0
+            font_size:"18sp"
+            color:1,1,1,1
+            on_release:
+                #root.manager.get_screen('todolist').add_todo_box(title.text, description.text, image.text, due_date.text, 0)
+                root.save_to_file()
+            canvas.before:
+                Color:
+                    rgb:(1, 170/255, 23/255, 1)
+                RoundedRectangle:
+                    size:self.size
+                    pos:self.pos
+                    radius:[25]

@@ -1122,7 +1122,26 @@ class FindYourHome(MDScreen):
         webview.create_window('Google Maps Navigation', google_maps_url, width=800, height=600)
         webview.start()
 
+# Daily Diary
 
+class DailyDiary(MDScreen):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.singleton = Singleton()
+    def save_to_file(self):
+        self.user = self.singleton.get_user()
+        date = datetime.datetime.now()
+        date.strftime('%m/%d/%Y, %H:%M:%S')
+        print(date)
+
+        file_in = open(f"resources/{self.user}_diary.txt", 'a')
+        file_in.write(str(date))
+        file_in.write("\n")
+        file_in.write(self.ids.description.text)
+        file_in.write("\n")
+        file_in.close()
 
 # <---- App Class ---->
 
@@ -1158,6 +1177,7 @@ class SpectrumApp(MDApp):
         self.emotions_diary = Emotion()
         self.shopping_list = Shopping()
         self.find_your_home = FindYourHome()
+        self.daily_diary = DailyDiary()
 
         self.screen_manager.add_widget(self.main_screen)
         self.screen_manager.add_widget(self.login_screen)
@@ -1177,6 +1197,7 @@ class SpectrumApp(MDApp):
         self.screen_manager.add_widget(self.emotions_diary)
         self.screen_manager.add_widget(self.shopping_list)
         self.screen_manager.add_widget(self.find_your_home)
+        self.screen_manager.add_widget(self.daily_diary)
 
 
         return self.screen_manager
